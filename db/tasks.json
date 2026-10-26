@@ -1,0 +1,7 @@
+[
+    { "id": 1, "name": "Complete Math Assignment", "due": "2026-11-01", "done": false },
+    { "id": 2, "name": "Read Physics Chapter 5", "due": "2026-10-28", "done": false },
+    { "id": 3, "name": "Submit Lab Report", "due": "2026-10-30", "done": true },
+    { "id": 4, "name": "Prepare Presentation Slides", "due": "2026-11-05", "done": false },
+    { "id": 5, "name": "Review Chemistry Notes", "due": "2026-10-25", "done": true }
+]

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html" class="active"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <div class="top-bar">
+                <div class="mb-2 mb-md-0">
+                    <h4 class="fw-bold mb-0">Hello, <span id="userName">Student</span> 👋</h4>
+                    <small class="text-muted">Let's boost your productivity today!</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="text" class="form-control search-input" placeholder="Search tasks...">
+                    <i class="bi bi-bell fs-5 text-muted px-1" style="cursor: pointer;"></i>
+                    <i class="bi bi-person-circle fs-4 text-primary px-1" style="cursor: pointer;"></i>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Tasks</p>
+                                <h3 class="fw-bold mb-0" id="totalTasks">0</h3>
+                            </div>
+                            <i class="bi bi-list-check" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Completed</p>
+                                <h3 class="fw-bold mb-0" id="completedTasks">0</h3>
+                            </div>
+                            <i class="bi bi-check-circle" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Study Hours</p>
+                                <h3 class="fw-bold mb-0" id="studyHours">0</h3>
+                            </div>
+                            <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ef4444, #f87171);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Upcoming Exams</p>
+                                <h3 class="fw-bold mb-0" id="upcomingExams">0</h3>
+                            </div>
+                            <i class="bi bi-calendar-event" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="section-title">Urgent Tasks</div>
+                    <div class="row g-3 mb-4" id="urgentTasks"></div>
+
+                    <div class="section-title">Your Productivity</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="chart-card p-4">
+                                <h6 class="fw-bold mb-3">Tasks Progress</h6>
+                                <canvas id="doughnutChart"></canvas>
+                                <div class="text-center mt-2">
+                                    <span class="text-muted" id="progressText" style="font-size: 0.9rem;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-card p-4">
+                                <h6 class="fw-bold mb-3">Weekly Activity</h6>
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="section-title">Today's Schedule</div>
+                    <div class="chart-card p-3 mb-4">
+                        <div id="scheduleList"></div>
+                    </div>
+
+                    <div class="section-title">Exam Countdown</div>
+                    <div class="chart-card p-3">
+                        <div id="examCountdown"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkLogin();
+        document.getElementById("userName").textContent = getUser();
+
+        async function initDashboard() {
+            var tasks = await loadData("db/tasks.json", "gradelift_tasks");
+            var timetable = await loadData("db/timetable.json", "gradelift_timetable");
+            var exams = await loadData("db/exams.json", "gradelift_exams");
+            var progress = await loadData("db/progress.json", "gradelift_progress");
+
+            var total = tasks.length;
+            var completed = tasks.filter(function(t) { return t.done; }).length;
+            var pending = total - completed;
+            var totalHours = progress.hoursBySubject.data.reduce(function(a, b) { return a + b; }, 0);
+            var now = new Date();
+            var upcoming = exams.filter(function(e) { return new Date(e.date) > now; }).length;
+
+            document.getElementById("totalTasks").textContent = total;
+            document.getElementById("completedTasks").textContent = completed;
+            document.getElementById("studyHours").textContent = totalHours;
+            document.getElementById("upcomingExams").textContent = upcoming;
+
+            var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById("progressText").textContent = completed + " of " + total + " tasks completed";
+
+            var urgent = tasks.filter(function(t) { return !t.done; }).sort(function(a, b) {
+                return new Date(a.due) - new Date(b.due);
+            }).slice(0, 4);
+
+            var urgentContainer = document.getElementById("urgentTasks");
+            if (urgent.length === 0) {
+                urgentContainer.innerHTML = '<div class="col-12"><div class="chart-card p-4 text-center text-muted">All tasks completed! Great job 🎉</div></div>';
+            } else {
+                urgent.forEach(function(task) {
+                    var today = new Date().toISOString().split("T")[0];
+                    var isOverdue = task.due < today;
+                    var dueDate = new Date(task.due);
+                    var diffDays = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
+                    var dueText = isOverdue ? "Overdue" : diffDays + " day" + (diffDays !== 1 ? "s" : "") + " left";
+
+                    var col = document.createElement("div");
+                    col.className = "col-md-6";
+                    col.innerHTML = '<div class="task-card p-3">' +
+                        '<p class="text-muted mb-1" style="font-size: 0.78rem;"><i class="bi bi-folder2"></i> GradeLift / Study</p>' +
+                        '<h6 class="fw-bold mb-2">' + task.name + '</h6>' +
+                        '<div class="mb-2">' +
+                        '<span class="tag tag-study">Studying</span>' +
+                        (isOverdue ? '<span class="tag tag-high">Overdue</span>' : '<span class="tag tag-exam">Upcoming</span>') +
+                        '</div>' +
+                        '<div class="d-flex justify-content-between align-items-center">' +
+                        '<small class="text-muted"><i class="bi bi-clock"></i> ' + dueText + '</small>' +
+                        '<small class="text-muted">' + task.due + '</small>' +
+                        '</div>' +
+                        '</div>';
+                    urgentContainer.appendChild(col);
+                });
+            }
+
+            var doughnutCtx = document.getElementById("doughnutChart").getContext("2d");
+            new Chart(doughnutCtx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Completed", "Pending"],
+                    datasets: [{
+                        data: [completed, pending],
+                        backgroundColor: ["#7c3aed", "#e9ecef"],
+                        borderWidth: 0,
+                        hoverBackgroundColor: ["#6d28d9", "#d1d5db"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: "72%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: { padding: 16, font: { family: "'Nunito Sans'", weight: "600" } }
+                        }
+                    }
+                }
+            });
+
+            var barCtx = document.getElementById("barChart").getContext("2d");
+            new Chart(barCtx, {
+                type: "bar",
+                data: {
+                    labels: progress.tasksPerDay.labels,
+                    datasets: [{
+                        label: "Tasks",
+                        data: progress.tasksPerDay.data,
+                        backgroundColor: function(context) {
+                            var chart = context.chart;
+                            var ctx2 = chart.ctx;
+                            var gradient = ctx2.createLinearGradient(0, 0, 0, chart.height);
+                            gradient.addColorStop(0, "#a78bfa");
+                            gradient.addColorStop(1, "#ddd6fe");
+                            return gradient;
+                        },
+                        borderRadius: 8,
+                        barThickness: 28
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: "#f1f5f9" },
+                            ticks: { font: { family: "'Nunito Sans'" } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Nunito Sans'" } }
+                        }
+                    }
+                }
+            });
+
+            var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            var todayName = days[new Date().getDay()];
+            var todaySlots = timetable.filter(function(s) {
+                return s.day === todayName;
+            }).sort(function(a, b) {
+                return a.time.localeCompare(b.time);
+            });
+
+            var scheduleList = document.getElementById("scheduleList");
+            if (todaySlots.length === 0) {
+                scheduleList.innerHTML = '<p class="text-muted text-center py-3 mb-0">No classes today 🎉</p>';
+            } else {
+                todaySlots.forEach(function(slot) {
+                    var item = document.createElement("div");
+                    item.className = "schedule-item";
+                    item.innerHTML = '<div class="d-flex justify-content-between align-items-center">' +
+                        '<strong style="font-size: 0.9rem;">' + slot.subject + '</strong>' +
+                        '<small class="text-muted"><i class="bi bi-clock"></i> ' + slot.time + '</small>' +
+                        '</div>';
+                    scheduleList.appendChild(item);
+                });
+            }
+
+            var upcomingExamsList = exams.filter(function(e) {
+                return new Date(e.date) > new Date();
+            }).sort(function(a, b) {
+                return new Date(a.date) - new Date(b.date);
+            }).slice(0, 3);
+
+            var examContainer = document.getElementById("examCountdown");
+            if (upcomingExamsList.length === 0) {
+                examContainer.innerHTML = '<p class="text-muted text-center py-3 mb-0">No upcoming exams</p>';
+            } else {
+                upcomingExamsList.forEach(function(exam) {
+                    var diff = new Date(exam.date) - new Date();
+                    var daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    var item = document.createElement("div");
+                    item.className = "d-flex justify-content-between align-items-center p-2 mb-2";
+                    item.style.borderRadius = "8px";
+                    item.style.background = "var(--bg-light)";
+                    item.innerHTML = '<div>' +
+                        '<strong style="font-size: 0.88rem;">' + exam.name + '</strong>' +
+                        '<br><small class="text-muted">' + exam.date + '</small>' +
+                        '</div>' +
+                        '<span class="badge rounded-pill exam-badge">' + daysLeft + ' days</span>';
+                    examContainer.appendChild(item);
+                });
+            }
+        }
+
+        initDashboard();
+    </script>
+</body>
+</html>

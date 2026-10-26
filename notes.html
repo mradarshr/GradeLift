@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html" class="active"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h4 class="fw-bold mb-0"><i class="bi bi-journal-text text-warning"></i> Notes</h4>
+                <button class="btn btn-warning" onclick="openNewNote()"><i class="bi bi-plus-lg"></i> New Note</button>
+            </div>
+
+            <div id="notesList" class="row g-3"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="noteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="noteModalTitle">New Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="noteForm" onsubmit="event.preventDefault(); document.getElementById('saveNoteBtn').click();">
+                        <input type="hidden" id="noteEditId" value="">
+                        <div class="mb-3">
+                            <label for="noteTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="noteTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noteContent" class="form-label">Content</label>
+                            <textarea class="form-control" id="noteContent" rows="5" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="saveNoteBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkLogin();
+
+        var notes = [];
+        var noteModal = null;
+
+        function getNoteModal() {
+            if (!noteModal) {
+                noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+            }
+            return noteModal;
+        }
+
+        async function init() {
+            notes = await loadData('db/notes.json', 'gradelift_notes');
+            renderNotes();
+        }
+
+        function renderNotes() {
+            var notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+            for (var i = 0; i < notes.length; i++) {
+                var note = notes[i];
+                var col = document.createElement('div');
+                col.className = 'col-md-4';
+
+                var card = document.createElement('div');
+                card.className = 'card note-card shadow-sm h-100';
+
+                var cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                var titleEl = document.createElement('h5');
+                titleEl.className = 'card-title';
+                titleEl.textContent = note.title;
+
+                var dateEl = document.createElement('p');
+                dateEl.className = 'text-muted small';
+                dateEl.textContent = note.date;
+
+                var contentEl = document.createElement('p');
+                contentEl.className = 'card-text';
+                contentEl.style.whiteSpace = 'pre-line';
+                contentEl.textContent = note.content;
+
+                cardBody.appendChild(titleEl);
+                cardBody.appendChild(dateEl);
+                cardBody.appendChild(contentEl);
+
+                var cardFooter = document.createElement('div');
+                cardFooter.className = 'card-footer bg-transparent border-top-0 d-flex justify-content-end gap-2';
+
+                var editBtn = document.createElement('button');
+                editBtn.className = 'btn btn-outline-warning btn-sm';
+                editBtn.innerHTML = '<i class="bi bi-pencil"></i> Edit';
+                editBtn.setAttribute('onclick', 'editNote(' + i + ')');
+
+                var deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-outline-danger btn-sm';
+                deleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+                deleteBtn.setAttribute('onclick', 'deleteNote(' + i + ')');
+
+                cardFooter.appendChild(editBtn);
+                cardFooter.appendChild(deleteBtn);
+
+                card.appendChild(cardBody);
+                card.appendChild(cardFooter);
+                col.appendChild(card);
+                notesList.appendChild(col);
+            }
+        }
+
+        function openNewNote() {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('noteEditId').value = '';
+            document.getElementById('noteModalTitle').textContent = 'New Note';
+            getNoteModal().show();
+        }
+
+        function editNote(index) {
+            var note = notes[index];
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+            document.getElementById('noteEditId').value = index;
+            document.getElementById('noteModalTitle').textContent = 'Edit Note';
+            getNoteModal().show();
+        }
+
+        document.getElementById('saveNoteBtn').addEventListener('click', function() {
+            var title = document.getElementById('noteTitle').value.trim();
+            var content = document.getElementById('noteContent').value.trim();
+            if (!title) {
+                alert('Please enter a note title.');
+                return;
+            }
+            var editId = document.getElementById('noteEditId').value;
+            var today = new Date().toISOString().split('T')[0];
+
+            if (editId === '') {
+                var newNote = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    date: today
+                };
+                notes.push(newNote);
+            } else {
+                var index = parseInt(editId);
+                notes[index].title = title;
+                notes[index].content = content;
+                notes[index].date = today;
+            }
+
+            saveData('gradelift_notes', notes);
+            renderNotes();
+            getNoteModal().hide();
+        });
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            saveData('gradelift_notes', notes);
+            renderNotes();
+        }
+
+        init();
+    </script>
+</body>
+</html>

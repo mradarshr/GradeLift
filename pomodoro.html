@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html" class="active"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <h4 class="fw-bold mb-4"><i class="bi bi-stopwatch text-danger"></i> Pomodoro Timer</h4>
+
+            <div class="chart-card p-4 p-md-5 mx-auto text-center" style="max-width: 540px;">
+                <div class="timer-circle-wrap mb-4">
+                    <svg class="timer-svg" viewBox="0 0 280 280">
+                        <defs>
+                            <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#ec4899"/>
+                            </linearGradient>
+                            <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#10b981"/>
+                                <stop offset="100%" stop-color="#06b6d4"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="timer-circle-bg" cx="140" cy="140" r="120"></circle>
+                        <circle class="timer-circle-progress" id="timerProgressCircle" cx="140" cy="140" r="120" stroke-dasharray="753.98" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="timer-circle-content">
+                        <div class="timer-circle-label" id="timerLabel">Work Time</div>
+                        <div class="timer-circle-display" id="timerDisplay">25:00</div>
+                        <span class="tag tag-study mt-1" id="timerBadge">Focus Session</span>
+                    </div>
+                </div>
+
+                <div class="mb-4 d-flex justify-content-center flex-wrap gap-2">
+                    <button class="btn btn-primary btn-lg px-4" id="startBtn" onclick="startTimer()"><i class="bi bi-play-fill"></i> Start</button>
+                    <button class="btn btn-warning btn-lg px-4" id="pauseBtn" onclick="pauseTimer()"><i class="bi bi-pause-fill"></i> Pause</button>
+                    <button class="btn btn-outline-danger btn-lg px-4" id="resetBtn" onclick="resetTimer()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <button class="btn btn-sm btn-outline-primary" onclick="setCustomTime(25, false)">25m Work</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="setCustomTime(5, true)">5m Break</button>
+                    <button class="btn btn-sm btn-outline-info" onclick="setCustomTime(15, true)">15m Break</button>
+                </div>
+
+                <hr>
+                <p class="mb-0 text-muted">Sessions Completed: <span id="sessionCount" class="fw-bold text-primary fs-5">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkLogin();
+
+        var workTime = 25 * 60;
+        var breakTime = 5 * 60;
+        var timeLeft = workTime;
+        var totalTime = workTime;
+        var isRunning = false;
+        var isBreak = false;
+        var sessions = 0;
+        var interval = null;
+        var circumference = 2 * Math.PI * 120;
+
+        function updateDisplay() {
+            var mins = Math.floor(timeLeft / 60);
+            var secs = timeLeft % 60;
+            var formattedMins = mins < 10 ? "0" + mins : mins;
+            var formattedSecs = secs < 10 ? "0" + secs : secs;
+            document.getElementById("timerDisplay").textContent = formattedMins + ":" + formattedSecs;
+
+            var fraction = totalTime > 0 ? (timeLeft / totalTime) : 0;
+            var offset = circumference * (1 - fraction);
+            var circle = document.getElementById("timerProgressCircle");
+            if (circle) {
+                circle.style.strokeDashoffset = offset;
+                if (isBreak) {
+                    circle.style.stroke = "url(#breakGradient)";
+                } else {
+                    circle.style.stroke = "url(#timerGradient)";
+                }
+            }
+        }
+
+        function setCustomTime(minutes, breakMode) {
+            pauseTimer();
+            isBreak = breakMode;
+            totalTime = minutes * 60;
+            timeLeft = totalTime;
+            document.getElementById("timerLabel").textContent = isBreak ? "Break Time" : "Work Time";
+            var badge = document.getElementById("timerBadge");
+            if (badge) {
+                badge.textContent = isBreak ? "Rest & Recharge" : "Focus Session";
+                badge.className = isBreak ? "tag tag-done mt-1" : "tag tag-study mt-1";
+            }
+            updateDisplay();
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            interval = setInterval(function() {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    isRunning = false;
+                    if (!isBreak) {
+                        sessions++;
+                        document.getElementById("sessionCount").textContent = sessions;
+                    }
+                    isBreak = !isBreak;
+                    totalTime = isBreak ? breakTime : workTime;
+                    timeLeft = totalTime;
+                    document.getElementById("timerLabel").textContent = isBreak ? "Break Time" : "Work Time";
+                    var badge = document.getElementById("timerBadge");
+                    if (badge) {
+                        badge.textContent = isBreak ? "Rest & Recharge" : "Focus Session";
+                        badge.className = isBreak ? "tag tag-done mt-1" : "tag tag-study mt-1";
+                    }
+                    updateDisplay();
+                    playBeep();
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(interval);
+            isRunning = false;
+        }
+
+        function resetTimer() {
+            clearInterval(interval);
+            isRunning = false;
+            isBreak = false;
+            totalTime = workTime;
+            timeLeft = workTime;
+            document.getElementById("timerLabel").textContent = "Work Time";
+            var badge = document.getElementById("timerBadge");
+            if (badge) {
+                badge.textContent = "Focus Session";
+                badge.className = "tag tag-study mt-1";
+            }
+            updateDisplay();
+        }
+
+        function playBeep() {
+            try {
+                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch (e) {
+            }
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Charts - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="progress.html" class="active"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <h4 class="fw-bold mb-4"><i class="bi bi-bar-chart-line text-info"></i> Progress Charts</h4>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="chart-card p-3 p-md-4 h-100">
+                        <h6 class="fw-bold mb-3">Tasks Completed Per Day</h6>
+                        <canvas id="tasksChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="chart-card p-3 p-md-4 h-100">
+                        <h6 class="fw-bold mb-3">Study Hours By Subject</h6>
+                        <canvas id="subjectsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card p-3 p-md-4 mt-3">
+                <h6 class="fw-bold mb-3">Add Progress Data</h6>
+                <form id="progressForm" class="row g-3">
+                    <div class="col-md-3">
+                        <select id="chartType" class="form-select">
+                            <option value="Tasks Per Day">Tasks Per Day</option>
+                            <option value="Hours By Subject">Hours By Subject</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="dataLabel" class="form-control" placeholder="Label (e.g. Mon)" required>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" id="dataValue" class="form-control" placeholder="Value" min="0" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-info w-100">Add Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        checkLogin();
+
+        var tasksChartInstance = null;
+        var subjectsChartInstance = null;
+        var progressData = null;
+
+        async function init() {
+            progressData = await loadData('db/progress.json', 'gradelift_progress');
+            renderCharts();
+        }
+
+        function renderCharts() {
+            if (tasksChartInstance) {
+                tasksChartInstance.destroy();
+            }
+            if (subjectsChartInstance) {
+                subjectsChartInstance.destroy();
+            }
+
+            var tasksCtx = document.getElementById('tasksChart').getContext('2d');
+            tasksChartInstance = new Chart(tasksCtx, {
+                type: 'bar',
+                data: {
+                    labels: progressData.tasksPerDay.labels,
+                    datasets: [{
+                        label: 'Tasks Completed',
+                        data: progressData.tasksPerDay.data,
+                        backgroundColor: '#36b9cc'
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            var subjectsCtx = document.getElementById('subjectsChart').getContext('2d');
+            subjectsChartInstance = new Chart(subjectsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: progressData.hoursBySubject.labels,
+                    datasets: [{
+                        data: progressData.hoursBySubject.data,
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        document.getElementById('progressForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var chartType = document.getElementById('chartType').value;
+            var label = document.getElementById('dataLabel').value;
+            var val = Number(document.getElementById('dataValue').value);
+
+            if (chartType === 'Tasks Per Day') {
+                progressData.tasksPerDay.labels.push(label);
+                progressData.tasksPerDay.data.push(val);
+            } else {
+                progressData.hoursBySubject.labels.push(label);
+                progressData.hoursBySubject.data.push(val);
+            }
+
+            saveData('gradelift_progress', progressData);
+            renderCharts();
+
+            document.getElementById('dataLabel').value = '';
+            document.getElementById('dataValue').value = '';
+        });
+
+        init();
+    </script>
+</body>
+</html>
