@@ -2,59 +2,9 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const Task = require("../models/Task");
-const Timetable = require("../models/Timetable");
-const Note = require("../models/Note");
-const Exam = require("../models/Exam");
-const Progress = require("../models/Progress");
 const auth = require("../middleware/auth");
 
 const JWT_SECRET = process.env.JWT_SECRET || "gradelift_production_jwt_secret_key_2026";
-
-async function seedUserData(userId) {
-    await Task.insertMany([
-        { userId, name: "Complete Math Assignment", due: "2026-11-01", done: false },
-        { userId, name: "Read Physics Chapter 5", due: "2026-10-28", done: false },
-        { userId, name: "Submit Lab Report", due: "2026-10-30", done: true },
-        { userId, name: "Prepare Presentation Slides", due: "2026-11-05", done: false },
-        { userId, name: "Review Chemistry Notes", due: "2026-10-25", done: true }
-    ]);
-
-    await Timetable.insertMany([
-        { userId, day: "Monday", time: "09:00", subject: "Mathematics" },
-        { userId, day: "Monday", time: "11:00", subject: "Physics" },
-        { userId, day: "Tuesday", time: "10:00", subject: "Chemistry" },
-        { userId, day: "Wednesday", time: "09:00", subject: "English" },
-        { userId, day: "Thursday", time: "14:00", subject: "Computer Science" },
-        { userId, day: "Friday", time: "09:00", subject: "Mathematics" },
-        { userId, day: "Friday", time: "11:00", subject: "Physics" }
-    ]);
-
-    await Note.insertMany([
-        { userId, title: "Physics Formulas", content: "F = ma\nE = mc squared\nV = IR\nP = IV\nW = Fd", date: "2026-10-20" },
-        { userId, title: "Essay Outline", content: "Introduction - Hook and thesis statement\nBody Paragraph 1 - Main argument\nBody Paragraph 2 - Supporting evidence\nBody Paragraph 3 - Counter argument\nConclusion - Restate thesis", date: "2026-10-22" },
-        { userId, title: "CS Algorithm Notes", content: "Binary Search - O(log n)\nMerge Sort - O(n log n)\nQuick Sort - O(n log n) average\nBubble Sort - O(n squared)", date: "2026-10-24" }
-    ]);
-
-    await Exam.insertMany([
-        { userId, name: "Mathematics Mid-Term", date: "2026-11-15" },
-        { userId, name: "Physics Final", date: "2026-12-10" },
-        { userId, name: "Chemistry Quiz", date: "2026-11-05" }
-    ]);
-
-    await Progress.create({
-        userId,
-        tasksPerDay: {
-            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-            data: [3, 5, 2, 4, 6, 1, 3]
-        },
-        hoursBySubject: {
-            labels: ["Math", "Physics", "Chemistry", "English", "CS"],
-            data: [8, 6, 4, 3, 7]
-        },
-        sessionsCompleted: 0
-    });
-}
 
 router.post("/signup", async (req, res) => {
     try {
@@ -74,8 +24,6 @@ router.post("/signup", async (req, res) => {
             password
         });
         await user.save();
-
-        await seedUserData(user._id);
 
         const token = jwt.sign(
             { userId: user._id, email: user.email, name: user.name },

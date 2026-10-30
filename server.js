@@ -14,7 +14,7 @@ const progressRoutes = require("./routes/progress");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/gradelift";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/GradeLift";
 
 let isConnected = false;
 async function connectToDatabase() {
@@ -22,6 +22,7 @@ async function connectToDatabase() {
         return;
     }
     await mongoose.connect(MONGODB_URI, {
+        dbName: "GradeLift",
         serverSelectionTimeoutMS: 5000
     });
     isConnected = true;
@@ -67,7 +68,10 @@ pages.forEach((page) => {
 });
 
 if (require.main === module) {
-    mongoose.connect(MONGODB_URI)
+    mongoose.connect(MONGODB_URI, {
+        dbName: "GradeLift",
+        serverSelectionTimeoutMS: 5000
+    })
         .then(() => {
             console.log("Connected to MongoDB successfully.");
             app.listen(PORT, () => {

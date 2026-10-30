@@ -22,6 +22,7 @@ async function connectToDatabase() {
         throw new Error("MONGODB_URI environment variable is missing. Please set it in Vercel project settings.");
     }
     await mongoose.connect(MONGODB_URI, {
+        dbName: "GradeLift",
         serverSelectionTimeoutMS: 5000
     });
     isConnected = true;

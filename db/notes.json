@@ -1,5 +1,0 @@
-[
-    { "id": 1, "title": "Physics Formulas", "content": "F = ma\nE = mc squared\nV = IR\nP = IV\nW = Fd", "date": "2026-10-20" },
-    { "id": 2, "title": "Essay Outline", "content": "Introduction - Hook and thesis statement\nBody Paragraph 1 - Main argument\nBody Paragraph 2 - Supporting evidence\nBody Paragraph 3 - Counter argument\nConclusion - Restate thesis", "date": "2026-10-22" },
-    { "id": 3, "title": "CS Algorithm Notes", "content": "Binary Search - O(log n)\nMerge Sort - O(n log n)\nQuick Sort - O(n log n) average\nBubble Sort - O(n squared)", "date": "2026-10-24" }
-]
