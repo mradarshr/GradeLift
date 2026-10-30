@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(async (req, res, next) => {
     if (req.path.startsWith("/api")) {
@@ -50,8 +50,16 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/progress", progressRoutes);
 
+const pages = ["login", "signup", "dashboard", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown"];
+
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+pages.forEach((page) => {
+    app.get(`/${page}`, (req, res) => {
+        res.sendFile(path.join(__dirname, "public", `${page}.html`));
+    });
 });
 
 if (require.main === module) {
