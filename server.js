@@ -21,7 +21,9 @@ async function connectToDatabase() {
     if (isConnected && mongoose.connection.readyState === 1) {
         return;
     }
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000
+    });
     isConnected = true;
 }
 
@@ -32,23 +34,25 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(async (req, res, next) => {
-    if (req.path.startsWith("/api")) {
-        try {
-            await connectToDatabase();
-        } catch (err) {
-            return res.status(500).json({ error: "Database connection failed." });
-        }
+const apiRouter = express.Router();
+
+apiRouter.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        return res.status(500).json({ error: err.message || "Database connection failed." });
     }
-    next();
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/tasks", taskRoutes);
-app.use("/api/timetable", timetableRoutes);
-app.use("/api/notes", noteRoutes);
-app.use("/api/exams", examRoutes);
-app.use("/api/progress", progressRoutes);
+apiRouter.use("/auth", authRoutes);
+apiRouter.use("/tasks", taskRoutes);
+apiRouter.use("/timetable", timetableRoutes);
+apiRouter.use("/notes", noteRoutes);
+apiRouter.use("/exams", examRoutes);
+apiRouter.use("/progress", progressRoutes);
+
+app.use("/api", apiRouter);
 
 const pages = ["login", "signup", "dashboard", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown"];
 
