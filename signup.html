@@ -83,26 +83,23 @@
                 return;
             }
 
-            var users = await loadData("db/users.json", "gradelift_users");
-            var existingUser = users.find(function(user) {
-                return user.email.toLowerCase() === email.toLowerCase();
-            });
-
-            if (existingUser) {
-                errorDiv.textContent = "An account with this email already exists!";
+            try {
+                var res = await apiRequest("/api/auth/signup", "POST", {
+                    name: fullName,
+                    email: email,
+                    password: password
+                });
+                if (res && res.token) {
+                    setToken(res.token);
+                    sessionStorage.setItem("loggedIn", "true");
+                    sessionStorage.setItem("userName", res.user.name);
+                    localStorage.setItem("gradelift_user", JSON.stringify(res.user));
+                    window.location.href = "dashboard.html";
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message || "Registration failed.";
                 errorDiv.classList.remove("d-none");
-                return;
             }
-
-            users.push({
-                name: fullName,
-                email: email,
-                password: password
-            });
-
-            saveData("gradelift_users", users);
-            alert("Account created successfully! Please login.");
-            window.location.href = "login.html";
         });
     </script>
 </body>

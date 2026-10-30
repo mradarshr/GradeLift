@@ -67,17 +67,20 @@
             errorDiv.classList.add("d-none");
             errorDiv.textContent = "";
 
-            var users = await loadData("db/users.json", "gradelift_users");
-            var user = users.find(function(u) {
-                return u.email.toLowerCase() === email.toLowerCase() && u.password === password;
-            });
-
-            if (user) {
-                sessionStorage.setItem("loggedIn", "true");
-                sessionStorage.setItem("userName", user.name);
-                window.location.href = "dashboard.html";
-            } else {
-                errorDiv.textContent = "Invalid email or password!";
+            try {
+                var res = await apiRequest("/api/auth/login", "POST", {
+                    email: email,
+                    password: password
+                });
+                if (res && res.token) {
+                    setToken(res.token);
+                    sessionStorage.setItem("loggedIn", "true");
+                    sessionStorage.setItem("userName", res.user.name);
+                    localStorage.setItem("gradelift_user", JSON.stringify(res.user));
+                    window.location.href = "dashboard.html";
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message || "Invalid email or password!";
                 errorDiv.classList.remove("d-none");
             }
         });

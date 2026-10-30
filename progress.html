@@ -85,14 +85,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="js/app.js"></script>
     <script>
-        checkLogin();
-
         var tasksChartInstance = null;
         var subjectsChartInstance = null;
         var progressData = null;
 
         async function init() {
-            progressData = await loadData('db/progress.json', 'gradelift_progress');
+            await checkLogin();
+            progressData = (await apiRequest('/api/progress')) || {
+                tasksPerDay: { labels: [], data: [] },
+                hoursBySubject: { labels: [], data: [] }
+            };
             renderCharts();
         }
 
@@ -136,25 +138,26 @@
             });
         }
 
-        document.getElementById('progressForm').addEventListener('submit', function(e) {
+        document.getElementById('progressForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             var chartType = document.getElementById('chartType').value;
-            var label = document.getElementById('dataLabel').value;
+            var label = document.getElementById('dataLabel').value.trim();
             var val = Number(document.getElementById('dataValue').value);
+            if (!label) return;
 
-            if (chartType === 'Tasks Per Day') {
-                progressData.tasksPerDay.labels.push(label);
-                progressData.tasksPerDay.data.push(val);
-            } else {
-                progressData.hoursBySubject.labels.push(label);
-                progressData.hoursBySubject.data.push(val);
+            try {
+                progressData = await apiRequest('/api/progress', 'POST', {
+                    chartType: chartType,
+                    label: label,
+                    value: val
+                });
+                renderCharts();
+
+                document.getElementById('dataLabel').value = '';
+                document.getElementById('dataValue').value = '';
+            } catch (err) {
+                alert(err.message || 'Failed to update progress.');
             }
-
-            saveData('gradelift_progress', progressData);
-            renderCharts();
-
-            document.getElementById('dataLabel').value = '';
-            document.getElementById('dataValue').value = '';
         });
 
         init();

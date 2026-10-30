@@ -144,14 +144,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="js/app.js"></script>
     <script>
-        checkLogin();
-        document.getElementById("userName").textContent = getUser();
-
         async function initDashboard() {
-            var tasks = await loadData("db/tasks.json", "gradelift_tasks");
-            var timetable = await loadData("db/timetable.json", "gradelift_timetable");
-            var exams = await loadData("db/exams.json", "gradelift_exams");
-            var progress = await loadData("db/progress.json", "gradelift_progress");
+            await checkLogin();
+            document.getElementById("userName").textContent = getUser();
+
+            var tasks = (await apiRequest("/api/tasks")) || [];
+            var timetable = (await apiRequest("/api/timetable")) || [];
+            var exams = (await apiRequest("/api/exams")) || [];
+            var progress = (await apiRequest("/api/progress")) || { tasksPerDay: { labels: [], data: [] }, hoursBySubject: { labels: [], data: [] } };
 
             var total = tasks.length;
             var completed = tasks.filter(function(t) { return t.done; }).length;
