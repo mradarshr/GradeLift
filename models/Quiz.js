@@ -1,5 +1,33 @@
 const mongoose = require("mongoose");
 
+const quizAttemptSchema = new mongoose.Schema({
+    attemptNumber: {
+        type: Number,
+        required: true
+    },
+    score: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    upToMarkCount: {
+        type: Number,
+        default: 0
+    },
+    totalQuestions: {
+        type: Number,
+        default: 0
+    },
+    results: {
+        type: Array,
+        default: []
+    },
+    completedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, { _id: true });
+
 const quizSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -29,19 +57,31 @@ const quizSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    score: {
-        type: Number,
-        default: 0
-    },
     questions: {
         type: Array,
         default: []
     },
-    results: {
-        type: Array,
+    attemptsCount: {
+        type: Number,
+        default: 0
+    },
+    bestScore: {
+        type: Number,
+        default: null
+    },
+    lastScore: {
+        type: Number,
+        default: null
+    },
+    attempts: {
+        type: [quizAttemptSchema],
         default: []
     },
-    completedAt: {
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     }

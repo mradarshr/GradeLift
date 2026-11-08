@@ -24,7 +24,7 @@ export default {
         if (request.method === "GET" && (path === "/" || path === "/health")) {
             return new Response(JSON.stringify({
                 status: "active",
-                service: "GradeLift Cloudflare AI Worker",
+                service: "GradeLift AI Worker",
                 model: "@cf/meta/llama-3.1-8b-instruct",
                 endpoints: ["/generate-quiz", "/analyze-answer"]
             }), { headers: corsHeaders });
@@ -104,7 +104,7 @@ If quizType is "mixed", alternate between "mcq" and "short_answer".`;
                     const parsed = JSON.parse(rawText);
                     return new Response(JSON.stringify({
                         success: true,
-                        source: "cloudflare-ai",
+                        source: "gradelift-ai",
                         ...parsed
                     }), { headers: corsHeaders });
                 }
@@ -189,7 +189,7 @@ isUpToMark must be true if score >= 70, otherwise false.`;
                     const parsed = JSON.parse(rawText);
                     return new Response(JSON.stringify({
                         success: true,
-                        source: "cloudflare-ai",
+                        source: "gradelift-ai",
                         ...parsed
                     }), { headers: corsHeaders });
                 }

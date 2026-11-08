@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Quiz Generator - GradeLift</title>
+    <title>AI Quiz Hub - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -41,23 +44,96 @@
         <div class="main-content flex-grow-1">
             <div class="top-bar">
                 <div class="mb-2 mb-md-0">
-                    <h4 class="fw-bold mb-0">AI Quiz Master <span class="badge bg-primary fs-6 fw-normal ms-2"><i class="bi bi-stars"></i> Powered by Cloudflare AI</span></h4>
-                    <small class="text-muted">Generate instant quizzes from your notes and evaluate your answers with deep AI feedback</small>
+                    <h4 class="fw-bold mb-0">AI Quiz Bank <span class="badge bg-primary fs-6 fw-normal ms-2"><i class="bi bi-stars"></i> GradeLift AI</span></h4>
+                    <small class="text-muted">Generate quizzes from notes, attempt or reattempt anytime, and track your mastery over time</small>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-outline-primary" onclick="showGeneratorView()"><i class="bi bi-plus-circle me-1"></i> New Quiz</button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="loadHistoryView()"><i class="bi bi-clock-history me-1"></i> History</button>
+                    <button id="tabAllQuizzesBtn" class="btn btn-sm btn-primary rounded-3" onclick="showAllQuizzesView()">
+                        <i class="bi bi-collection-play me-1"></i> My Quizzes
+                    </button>
+                    <button id="tabNewQuizBtn" class="btn btn-sm btn-outline-primary rounded-3" onclick="showGeneratorView()">
+                        <i class="bi bi-plus-circle me-1"></i> Generate Quiz
+                    </button>
                 </div>
             </div>
 
-            <div id="generatorSection" class="row g-4">
+            <div id="allQuizzesSection">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Quizzes</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalQuizzes">0</h3>
+                                </div>
+                                <i class="bi bi-journal-bookmark" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Attempts</p>
+                                    <h3 class="fw-bold mb-0" id="statTotalAttempts">0</h3>
+                                </div>
+                                <i class="bi bi-arrow-repeat" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Best Score</p>
+                                    <h3 class="fw-bold mb-0" id="statBestScore">0%</h3>
+                                </div>
+                                <i class="bi bi-trophy" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Average Mastery</p>
+                                    <h3 class="fw-bold mb-0" id="statAvgScore">0%</h3>
+                                </div>
+                                <i class="bi bi-graph-up" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-collection-play text-primary me-2"></i>Saved Quizzes Library</h5>
+                            <p class="text-muted small mb-0">All quizzes generated from your notes are preserved in database. Attempt or reattempt anytime to measure improvement.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="quizSearchInput" class="form-control form-control-sm rounded-3" placeholder="Filter quizzes..." oninput="filterQuizzesList()" style="max-width: 200px;">
+                            <button class="btn btn-sm btn-primary rounded-3 text-nowrap" onclick="showGeneratorView()"><i class="bi bi-plus-lg me-1"></i> New Quiz</button>
+                        </div>
+                    </div>
+
+                    <div id="quizzesGrid" class="row g-3">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                            <span class="text-muted">Loading your quiz library...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="generatorSection" class="row g-4 d-none">
                 <div class="col-lg-7">
                     <div class="card p-4 border-0 shadow-sm rounded-4">
                         <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-magic me-2"></i>Generate Quiz from Notes</h5>
-                            <span class="quiz-source-pill"><i class="bi bi-cpu"></i> LLM Ready</span>
+                            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-magic me-2"></i>Generate Quiz with GradeLift AI</h5>
+                            <span class="quiz-source-pill"><i class="bi bi-cpu"></i> GradeLift AI</span>
                         </div>
-                        <p class="text-muted small">Choose one of your saved study notes or paste any topic text below. The AI will synthesize questions, distractors, and key evaluation rubrics.</p>
+                        <p class="text-muted small">Choose one of your saved study notes or enter custom topic content. GradeLift AI will generate the quiz and immediately save it in your database.</p>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Select from Saved Notes</label>
@@ -104,46 +180,40 @@
                             </div>
                         </div>
 
-                        <button id="generateBtn" class="btn btn-primary btn-lg rounded-3 fw-bold w-100" onclick="startGenerateQuiz()">
-                            <i class="bi bi-lightning-charge-fill me-2"></i> Generate AI Quiz
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button id="generateBtn" class="btn btn-primary btn-lg rounded-3 fw-bold flex-grow-1" onclick="startGenerateQuiz()">
+                                <i class="bi bi-lightning-charge-fill me-2"></i> Generate & Save Quiz
+                            </button>
+                            <button class="btn btn-outline-secondary btn-lg rounded-3" onclick="showAllQuizzesView()">Cancel</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-lg-5">
                     <div class="card p-4 border-0 shadow-sm rounded-4 h-100 bg-white">
-                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>How Answer Analysis Works</h5>
+                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>How GradeLift AI Evaluates</h5>
                         <div class="d-flex flex-column gap-3">
                             <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #faf5ff;">
                                 <i class="bi bi-ui-radios-grid text-primary fs-3"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1">Multiple Choice (MCQ)</h6>
-                                    <p class="text-muted small mb-0">Instantly validates your choice, exposes smart distractors, and provides clear reference explanations.</p>
+                                    <p class="text-muted small mb-0">Instantly validates your answer, tests key facts, and provides clear explanations from your notes.</p>
                                 </div>
                             </div>
                             <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #eff6ff;">
                                 <i class="bi bi-chat-square-text text-info fs-3"></i>
                                 <div>
                                     <h6 class="fw-bold mb-1">Conceptual Answer Analysis</h6>
-                                    <p class="text-muted small mb-0">Type your answer in your own words. Cloudflare AI checks if your answer is <strong>up to mark</strong>, scores your depth, highlights matched concepts, and spots missing points.</p>
+                                    <p class="text-muted small mb-0">Write your explanation in your own words. GradeLift AI analyzes whether your response is <strong>up to mark</strong>, highlights matched concepts, and spots missing details.</p>
                                 </div>
                             </div>
                             <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #ecfdf5;">
-                                <i class="bi bi-trophy text-success fs-3"></i>
+                                <i class="bi bi-arrow-repeat text-success fs-3"></i>
                                 <div>
-                                    <h6 class="fw-bold mb-1">Progress & Retention</h6>
-                                    <p class="text-muted small mb-0">Every completed quiz increases your session streak and helps solidify retention before exams.</p>
+                                    <h6 class="fw-bold mb-1">Reattempt & Progress Tracking</h6>
+                                    <p class="text-muted small mb-0">Every quiz stays in your bank. Reattempt anytime to watch your scores improve from attempt to attempt.</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mt-4 pt-3 border-top">
-                            <h6 class="fw-bold text-muted small mb-2">QUICK TIPS</h6>
-                            <ul class="text-muted small ps-3 mb-0">
-                                <li class="mb-1">Include key definitions and bullet points in notes for richer quizzes.</li>
-                                <li class="mb-1">Use the Conceptual mode to prepare for long-form exam questions.</li>
-                                <li>Review your past performance in the History view anytime.</li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -155,6 +225,7 @@
                         <div>
                             <span id="activeQuizSource" class="quiz-source-pill me-2"><i class="bi bi-cpu"></i> GradeLift AI</span>
                             <span id="activeQuizDifficulty" class="badge bg-secondary-subtle text-dark text-capitalize">Medium</span>
+                            <span id="activeQuizAttemptNum" class="badge bg-primary-subtle text-primary ms-1">Attempt #1</span>
                             <h4 id="activeQuizTitle" class="fw-bold mt-2 mb-0">Quiz Title</h4>
                         </div>
                         <div class="text-end">
@@ -177,8 +248,8 @@
                             <button id="nextQuestionBtn" class="btn btn-primary rounded-3 px-4" onclick="nextQuestion()">
                                 Next <i class="bi bi-arrow-right ms-1"></i>
                             </button>
-                            <button id="finishQuizBtn" class="btn btn-success rounded-3 px-4 d-none" onclick="finishQuiz()">
-                                Finish Quiz <i class="bi bi-check-circle-fill ms-1"></i>
+                            <button id="finishQuizBtn" class="btn btn-success rounded-3 px-4 d-none" onclick="finishQuizAttempt()">
+                                Submit Attempt <i class="bi bi-check-circle-fill ms-1"></i>
                             </button>
                         </div>
                     </div>
@@ -186,71 +257,85 @@
             </div>
 
             <div id="quizSummarySection" class="d-none">
-                <div class="card border-0 shadow-sm rounded-4 p-5 text-center mb-4 bg-white">
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 text-center mb-4 bg-white">
                     <div class="mb-3">
                         <span class="d-inline-flex align-items-center justify-content-center rounded-circle p-3" style="background: #f5f3ff; width: 80px; height: 80px;">
                             <i class="bi bi-trophy-fill fs-1 text-primary"></i>
                         </span>
                     </div>
-                    <h3 class="fw-bold text-dark mb-1">Quiz Completed!</h3>
-                    <p class="text-muted mb-4" id="summarySubtitle">Here is how you performed on this study session.</p>
+                    <span id="summaryAttemptBadge" class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fs-6 fw-bold mb-2">Attempt Completed</span>
+                    <h3 class="fw-bold text-dark mb-1" id="summaryQuizTitle">Quiz Finished!</h3>
+                    <p class="text-muted mb-4" id="summarySubtitle">Here is your performance on this attempt.</p>
+
+                    <div id="progressComparisonCard" class="alert alert-light border rounded-4 text-start mb-4 p-3 d-none">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-graph-up-arrow fs-2 text-success"></i>
+                                <div>
+                                    <strong class="d-block text-dark" id="progressComparisonTitle">Attempt Progression</strong>
+                                    <small class="text-muted" id="progressComparisonDesc">You improved by +15% over your previous attempt.</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-success-subtle text-success fs-6 fw-bold px-3 py-2" id="progressComparisonPill">+0%</span>
+                        </div>
+                    </div>
 
                     <div class="row justify-content-center g-3 mb-4">
                         <div class="col-md-3 col-6">
                             <div class="p-3 rounded-4" style="background: #faf5ff;">
                                 <div class="score-badge-huge text-primary" id="summaryScorePercent">0%</div>
-                                <span class="text-muted small fw-bold">OVERALL SCORE</span>
+                                <span class="text-muted small fw-bold">THIS ATTEMPT</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
                             <div class="p-3 rounded-4" style="background: #ecfdf5;">
                                 <div class="score-badge-huge text-success" id="summaryCorrectCount">0/0</div>
-                                <span class="text-muted small fw-bold">QUESTIONS UP TO MARK</span>
+                                <span class="text-muted small fw-bold">UP TO MARK</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center gap-3">
-                        <button class="btn btn-primary rounded-3 px-4 fw-bold" onclick="showGeneratorView()">
-                            <i class="bi bi-arrow-repeat me-1"></i> Take Another Quiz
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <button class="btn btn-primary rounded-3 px-4 fw-bold" onclick="reattemptCurrentQuiz()">
+                            <i class="bi bi-arrow-repeat me-1"></i> Reattempt This Quiz
                         </button>
-                        <button class="btn btn-outline-secondary rounded-3 px-4" onclick="loadHistoryView()">
-                            <i class="bi bi-clock-history me-1"></i> View History
+                        <button class="btn btn-outline-secondary rounded-3 px-4" onclick="showAllQuizzesView()">
+                            <i class="bi bi-collection-play me-1"></i> Back to My Quizzes
+                        </button>
+                        <button class="btn btn-outline-primary rounded-3 px-4" onclick="showGeneratorView()">
+                            <i class="bi bi-plus-lg me-1"></i> Generate Another Quiz
                         </button>
                     </div>
                 </div>
 
                 <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Detailed Question Review</h5>
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Question Analysis Review</h5>
                     <div id="detailedReviewContainer"></div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div id="quizHistorySection" class="d-none">
-                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Past Quiz Attempts</h5>
-                        <button class="btn btn-sm btn-primary rounded-3" onclick="showGeneratorView()"><i class="bi bi-plus-lg me-1"></i> New Quiz</button>
+    <div class="modal fade" id="attemptsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark" id="modalQuizTitle">Quiz Attempt History</h5>
+                        <small class="text-muted" id="modalQuizSubtitle">Review all past attempts and score progression</small>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Quiz Topic</th>
-                                    <th>Type</th>
-                                    <th>Difficulty</th>
-                                    <th>Score</th>
-                                    <th class="text-end">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">Loading quiz history...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="modalStatsBanner" class="row g-2 mb-4"></div>
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Attempt Timeline</h6>
+                    <div id="modalAttemptsList" class="d-flex flex-column gap-3"></div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary rounded-3 fw-bold" id="modalReattemptBtn">
+                        <i class="bi bi-arrow-repeat me-1"></i> Reattempt Quiz
+                    </button>
                 </div>
             </div>
         </div>
@@ -258,10 +343,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let userQuizzes = [];
         let currentQuiz = null;
         let currentQuestionIndex = 0;
         let studentAnswers = {};
         let savedNotesList = [];
+        let attemptsModalInstance = null;
 
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('show');
@@ -314,64 +401,170 @@
             }
         }
 
-        function showGeneratorView() {
-            document.getElementById('generatorSection').classList.remove('d-none');
-            document.getElementById('quizActiveSection').classList.add('d-none');
-            document.getElementById('quizSummarySection').classList.add('d-none');
-            document.getElementById('quizHistorySection').classList.add('d-none');
-        }
-
-        async function loadHistoryView() {
+        function setView(viewName) {
+            document.getElementById('allQuizzesSection').classList.add('d-none');
             document.getElementById('generatorSection').classList.add('d-none');
             document.getElementById('quizActiveSection').classList.add('d-none');
             document.getElementById('quizSummarySection').classList.add('d-none');
-            document.getElementById('quizHistorySection').classList.remove('d-none');
 
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading past quizzes...</td></tr>';
+            document.getElementById('tabAllQuizzesBtn').className = 'btn btn-sm btn-outline-primary rounded-3';
+            document.getElementById('tabNewQuizBtn').className = 'btn btn-sm btn-outline-primary rounded-3';
 
-            try {
-                const res = await fetch('/api/quiz/history');
-                if (!res.ok) throw new Error('Failed to load history');
-                const history = await res.json();
-
-                if (!history || history.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No quizzes taken yet. Generate your first quiz above!</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                history.forEach(item => {
-                    const tr = document.createElement('tr');
-                    const d = new Date(item.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-                    const scorePct = item.score !== undefined ? `${item.score}%` : 'N/A';
-                    const scoreBadge = (item.score >= 70) ? 'bg-success-subtle text-success' : ((item.score >= 40) ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger');
-
-                    tr.innerHTML = `
-                        <td><small class="text-muted">${d}</small></td>
-                        <td class="fw-bold">${escapeHtml(item.title)}</td>
-                        <td><span class="badge bg-light text-dark text-uppercase">${item.type}</span></td>
-                        <td><span class="badge bg-light text-secondary text-capitalize">${item.difficulty}</span></td>
-                        <td><span class="badge ${scoreBadge} fw-bold px-2 py-1">${scorePct}</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteQuizHistory('${item._id}')"><i class="bi bi-trash"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Failed to load quiz history.</td></tr>';
+            if (viewName === 'allQuizzes') {
+                document.getElementById('allQuizzesSection').classList.remove('d-none');
+                document.getElementById('tabAllQuizzesBtn').className = 'btn btn-sm btn-primary rounded-3';
+            } else if (viewName === 'generator') {
+                document.getElementById('generatorSection').classList.remove('d-none');
+                document.getElementById('tabNewQuizBtn').className = 'btn btn-sm btn-primary rounded-3';
+            } else if (viewName === 'active') {
+                document.getElementById('quizActiveSection').classList.remove('d-none');
+            } else if (viewName === 'summary') {
+                document.getElementById('quizSummarySection').classList.remove('d-none');
             }
         }
 
-        async function deleteQuizHistory(id) {
-            if (!confirm('Are you sure you want to delete this quiz record?')) return;
+        function showAllQuizzesView() {
+            setView('allQuizzes');
+            loadAllQuizzes();
+        }
+
+        function showGeneratorView() {
+            setView('generator');
+        }
+
+        async function loadAllQuizzes() {
             try {
-                const res = await fetch(`/api/quiz/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadHistoryView();
+                const res = await fetch('/api/quiz');
+                if (!res.ok) throw new Error('Failed to load quizzes');
+                userQuizzes = await res.json();
+                renderQuizzesList(userQuizzes);
+                updateSummaryStats(userQuizzes);
+            } catch (err) {
+                document.getElementById('quizzesGrid').innerHTML = '<div class="col-12 text-center text-danger py-4">Failed to load quiz library. Please refresh.</div>';
+            }
+        }
+
+        function updateSummaryStats(quizzes) {
+            const totalQuizzes = quizzes.length;
+            let totalAttempts = 0;
+            let bestScoreAcc = 0;
+            let scoresList = [];
+
+            quizzes.forEach(q => {
+                const attCount = q.attemptsCount || (q.attempts ? q.attempts.length : 0);
+                totalAttempts += attCount;
+                if (typeof q.bestScore === 'number') {
+                    bestScoreAcc = Math.max(bestScoreAcc, q.bestScore);
+                    scoresList.push(q.bestScore);
                 }
-            } catch (e) {}
+            });
+
+            const avg = scoresList.length ? Math.round(scoresList.reduce((a, b) => a + b, 0) / scoresList.length) : 0;
+
+            document.getElementById('statTotalQuizzes').textContent = totalQuizzes;
+            document.getElementById('statTotalAttempts').textContent = totalAttempts;
+            document.getElementById('statBestScore').textContent = `${bestScoreAcc}%`;
+            document.getElementById('statAvgScore').textContent = `${avg}%`;
+        }
+
+        function filterQuizzesList() {
+            const q = (document.getElementById('quizSearchInput').value || '').toLowerCase().trim();
+            if (!q) {
+                renderQuizzesList(userQuizzes);
+                return;
+            }
+            const filtered = userQuizzes.filter(quiz => {
+                return (quiz.title || '').toLowerCase().includes(q) ||
+                       (quiz.type || '').toLowerCase().includes(q) ||
+                       (quiz.difficulty || '').toLowerCase().includes(q);
+            });
+            renderQuizzesList(filtered);
+        }
+
+        function renderQuizzesList(quizzes) {
+            const container = document.getElementById('quizzesGrid');
+            container.innerHTML = '';
+
+            if (!quizzes || quizzes.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="p-5 text-center rounded-4 border bg-light">
+                            <i class="bi bi-robot display-4 text-primary opacity-50 mb-3 d-inline-block"></i>
+                            <h5 class="fw-bold text-dark">No Quizzes Created Yet</h5>
+                            <p class="text-muted small mx-auto mb-4" style="max-width: 480px;">Turn your study notes into multiple choice and conceptual tests. Every quiz is stored in your personal database so you can reattempt anytime.</p>
+                            <button class="btn btn-primary rounded-pill px-4 fw-bold" onclick="showGeneratorView()">
+                                <i class="bi bi-magic me-2"></i> Generate First Quiz
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            quizzes.forEach(quiz => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+
+                const attCount = quiz.attemptsCount || (quiz.attempts ? quiz.attempts.length : 0);
+                const hasAttempts = attCount > 0;
+                const bestScore = (typeof quiz.bestScore === 'number') ? `${quiz.bestScore}%` : 'N/A';
+                const lastScore = (typeof quiz.lastScore === 'number') ? `${quiz.lastScore}%` : 'N/A';
+
+                let progressBadge = '';
+                if (quiz.attempts && quiz.attempts.length >= 2) {
+                    const firstScore = quiz.attempts[0].score || 0;
+                    const latestScore = quiz.attempts[quiz.attempts.length - 1].score || 0;
+                    const diff = latestScore - firstScore;
+                    if (diff > 0) {
+                        progressBadge = `<span class="badge bg-success-subtle text-success small"><i class="bi bi-graph-up-arrow"></i> +${diff}% progress</span>`;
+                    } else if (diff === 0) {
+                        progressBadge = `<span class="badge bg-secondary-subtle text-secondary small"><i class="bi bi-dash"></i> Consistent</span>`;
+                    } else {
+                        progressBadge = `<span class="badge bg-warning-subtle text-warning small">${diff}% vs first</span>`;
+                    }
+                }
+
+                col.innerHTML = `
+                    <div class="card h-100 border rounded-4 p-3 shadow-sm hover-shadow transition-all bg-white d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary-subtle text-primary text-uppercase">${escapeHtml(quiz.type)}</span>
+                            <span class="badge bg-light text-secondary text-capitalize">${escapeHtml(quiz.difficulty || 'medium')}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1 lh-sm">${escapeHtml(quiz.title)}</h6>
+                        <small class="text-muted mb-3"><i class="bi bi-question-circle me-1"></i>${quiz.totalQuestions || (quiz.questions ? quiz.questions.length : 0)} questions</small>
+
+                        <div class="p-2 rounded-3 bg-light mb-3 mt-auto">
+                            <div class="d-flex justify-content-between align-items-center small mb-1">
+                                <span class="text-muted">Attempts:</span>
+                                <span class="fw-bold text-dark">${attCount} ${attCount === 1 ? 'time' : 'times'}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small mb-1">
+                                <span class="text-muted">Best Score:</span>
+                                <span class="fw-bold ${hasAttempts ? 'text-success' : 'text-muted'}">${bestScore}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <span class="text-muted">Latest:</span>
+                                <span class="fw-bold ${hasAttempts ? 'text-primary' : 'text-muted'}">${lastScore}</span>
+                            </div>
+                        </div>
+
+                        ${progressBadge ? `<div class="mb-3 text-center">${progressBadge}</div>` : ''}
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-primary rounded-3 flex-grow-1 fw-bold" onclick="startAttempt('${quiz._id}')">
+                                <i class="bi bi-play-circle me-1"></i> ${hasAttempts ? 'Reattempt' : 'Attempt'}
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-3" title="View Progress History" onclick="openAttemptsModal('${quiz._id}')">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger rounded-3" title="Delete Quiz" onclick="deleteQuiz('${quiz._id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
         }
 
         async function startGenerateQuiz() {
@@ -383,14 +576,14 @@
             const noteId = document.getElementById('savedNotesSelect').value || null;
 
             if (!title && !content) {
-                alert('Please enter a quiz topic or paste some study notes to generate questions.');
+                alert('Please enter a quiz topic or paste study notes to generate questions.');
                 return;
             }
 
             const btn = document.getElementById('generateBtn');
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Analyzing Notes & Generating Quiz...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Synthesizing Quiz with GradeLift AI...';
 
             try {
                 const res = await fetch('/api/quiz/generate', {
@@ -404,28 +597,43 @@
                     throw new Error(err.error || 'Failed to generate quiz');
                 }
 
-                currentQuiz = await res.json();
-                studentAnswers = {};
-                currentQuestionIndex = 0;
+                const data = await res.json();
+                currentQuiz = data.quiz;
 
-                document.getElementById('generatorSection').classList.add('d-none');
-                document.getElementById('quizSummarySection').classList.add('d-none');
-                document.getElementById('quizHistorySection').classList.add('d-none');
-                document.getElementById('quizActiveSection').classList.remove('d-none');
-
-                document.getElementById('activeQuizTitle').textContent = currentQuiz.title || title;
-                document.getElementById('activeQuizDifficulty').textContent = currentQuiz.difficulty || difficulty;
-                document.getElementById('activeQuizSource').innerHTML = currentQuiz.source === 'cloudflare-ai'
-                    ? '<i class="bi bi-cloud-check-fill text-primary"></i> Cloudflare AI Worker'
-                    : '<i class="bi bi-cpu text-secondary"></i> GradeLift AI Engine';
-
-                renderCurrentQuestion();
+                loadQuizIntoActiveView(currentQuiz);
             } catch (err) {
-                alert(err.message || 'Error creating quiz. Please try again.');
+                alert(err.message || 'Error generating quiz. Please try again.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
+        }
+
+        async function startAttempt(quizId) {
+            try {
+                const res = await fetch(`/api/quiz/${quizId}`);
+                if (!res.ok) throw new Error('Failed to load quiz');
+                currentQuiz = await res.json();
+                loadQuizIntoActiveView(currentQuiz);
+            } catch (err) {
+                alert('Could not open quiz. Please try again.');
+            }
+        }
+
+        function loadQuizIntoActiveView(quiz) {
+            currentQuiz = quiz;
+            studentAnswers = {};
+            currentQuestionIndex = 0;
+
+            setView('active');
+
+            const attNum = (quiz.attempts ? quiz.attempts.length : 0) + 1;
+            document.getElementById('activeQuizTitle').textContent = quiz.title || 'Study Quiz';
+            document.getElementById('activeQuizDifficulty').textContent = quiz.difficulty || 'medium';
+            document.getElementById('activeQuizAttemptNum').textContent = `Attempt #${attNum}`;
+            document.getElementById('activeQuizSource').innerHTML = '<i class="bi bi-cpu text-primary"></i> GradeLift AI';
+
+            renderCurrentQuestion();
         }
 
         function renderCurrentQuestion() {
@@ -520,9 +728,9 @@
                         <textarea id="shortAnswerInput" class="form-control rounded-3" rows="5" placeholder="Explain the concept clearly as taught in your notes...">${escapeHtml(currentText)}</textarea>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">Cloudflare AI will examine accuracy against core key points.</small>
+                        <small class="text-muted">GradeLift AI will examine accuracy against core key points.</small>
                         <button id="analyzeAnswerBtn" class="btn btn-sm btn-primary rounded-3 px-3 fw-bold" onclick="analyzeStudentAnswer()">
-                            <i class="bi bi-magic me-1"></i> Evaluate Answer
+                            <i class="bi bi-magic me-1"></i> Evaluate with GradeLift AI
                         </button>
                     </div>
                     ${analysisHtml}
@@ -550,14 +758,14 @@
             const text = input ? input.value.trim() : '';
 
             if (!text || text.length < 5) {
-                alert('Please write an answer before requesting AI evaluation.');
+                alert('Please write an answer before requesting GradeLift AI evaluation.');
                 return;
             }
 
             const btn = document.getElementById('analyzeAnswerBtn');
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Analyzing...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Evaluating...';
 
             try {
                 const res = await fetch('/api/quiz/analyze', {
@@ -618,7 +826,7 @@
             }
         }
 
-        async function finishQuiz() {
+        async function finishQuizAttempt() {
             saveCurrentInput();
             const total = currentQuiz.questions.length;
             let totalScoreAcc = 0;
@@ -656,15 +864,61 @@
 
             const overallPct = Math.round(totalScoreAcc / total);
 
-            document.getElementById('quizActiveSection').classList.add('d-none');
-            document.getElementById('quizSummarySection').classList.remove('d-none');
+            let savedResponse = null;
+            try {
+                const res = await fetch(`/api/quiz/${currentQuiz._id}/attempt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        score: overallPct,
+                        upToMarkCount: upToMarkCount,
+                        results: results
+                    })
+                });
+                if (res.ok) {
+                    savedResponse = await res.json();
+                    if (savedResponse && savedResponse.quiz) {
+                        currentQuiz = savedResponse.quiz;
+                    }
+                }
+            } catch (e) {}
 
+            setView('summary');
+
+            const attemptCount = currentQuiz.attempts ? currentQuiz.attempts.length : 1;
+            document.getElementById('summaryAttemptBadge').textContent = `Attempt #${attemptCount} Completed`;
+            document.getElementById('summaryQuizTitle').textContent = currentQuiz.title;
             document.getElementById('summaryScorePercent').textContent = `${overallPct}%`;
             document.getElementById('summaryCorrectCount').textContent = `${upToMarkCount}/${total}`;
 
-            let subtitle = 'Great effort! Keep practicing to master every concept.';
-            if (overallPct >= 85) subtitle = 'Outstanding performance! You have a firm grasp of this material.';
-            else if (overallPct >= 65) subtitle = 'Solid work! A quick review of the missed points will make it perfect.';
+            const compCard = document.getElementById('progressComparisonCard');
+            if (currentQuiz.attempts && currentQuiz.attempts.length >= 2) {
+                const prev = currentQuiz.attempts[currentQuiz.attempts.length - 2];
+                const diff = overallPct - (prev.score || 0);
+                compCard.classList.remove('d-none');
+                if (diff > 0) {
+                    document.getElementById('progressComparisonTitle').textContent = `Progress: +${diff}% Score Improvement!`;
+                    document.getElementById('progressComparisonDesc').textContent = `You scored ${overallPct}% on Attempt #${attemptCount}, up from ${prev.score}% on Attempt #${attemptCount - 1}. Great progress!`;
+                    document.getElementById('progressComparisonPill').className = 'badge bg-success-subtle text-success fs-6 fw-bold px-3 py-2';
+                    document.getElementById('progressComparisonPill').textContent = `+${diff}%`;
+                } else if (diff === 0) {
+                    document.getElementById('progressComparisonTitle').textContent = `Consistent Mastery: Maintained ${overallPct}%`;
+                    document.getElementById('progressComparisonDesc').textContent = `Your score matched your previous attempt (${prev.score}%).`;
+                    document.getElementById('progressComparisonPill').className = 'badge bg-secondary-subtle text-secondary fs-6 fw-bold px-3 py-2';
+                    document.getElementById('progressComparisonPill').textContent = `0%`;
+                } else {
+                    document.getElementById('progressComparisonTitle').textContent = `Review Missed Concepts`;
+                    document.getElementById('progressComparisonDesc').textContent = `Attempt #${attemptCount - 1} was ${prev.score}%. Check the breakdown below to refresh key points.`;
+                    document.getElementById('progressComparisonPill').className = 'badge bg-warning-subtle text-warning fs-6 fw-bold px-3 py-2';
+                    document.getElementById('progressComparisonPill').textContent = `${diff}%`;
+                }
+            } else {
+                compCard.classList.add('d-none');
+            }
+
+            let subtitle = 'Great effort! Reattempt this quiz anytime from your library to lock in retention.';
+            if (overallPct >= 85) subtitle = 'Outstanding performance! You have demonstrated high mastery of these concepts.';
+            else if (overallPct >= 65) subtitle = 'Solid work! Review the missing nuances below and reattempt to hit 90%+.';
             document.getElementById('summarySubtitle').textContent = subtitle;
 
             const reviewContainer = document.getElementById('detailedReviewContainer');
@@ -688,22 +942,92 @@
                 `;
                 reviewContainer.appendChild(item);
             });
+        }
 
-            try {
-                await fetch('/api/quiz/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: currentQuiz.title,
-                        type: currentQuiz.type,
-                        difficulty: currentQuiz.difficulty,
-                        totalQuestions: total,
-                        score: overallPct,
-                        questions: currentQuiz.questions,
-                        results: results
-                    })
+        function reattemptCurrentQuiz() {
+            if (!currentQuiz) return;
+            loadQuizIntoActiveView(currentQuiz);
+        }
+
+        async function openAttemptsModal(quizId) {
+            const found = userQuizzes.find(q => q._id === quizId);
+            if (!found) return;
+
+            document.getElementById('modalQuizTitle').textContent = found.title;
+            document.getElementById('modalQuizSubtitle').textContent = `Total Questions: ${found.totalQuestions || (found.questions ? found.questions.length : 0)} | Difficulty: ${found.difficulty}`;
+
+            const statsBanner = document.getElementById('modalStatsBanner');
+            const atts = found.attempts || [];
+            const count = atts.length;
+            const best = (typeof found.bestScore === 'number') ? `${found.bestScore}%` : 'N/A';
+            const latest = (typeof found.lastScore === 'number') ? `${found.lastScore}%` : 'N/A';
+
+            statsBanner.innerHTML = `
+                <div class="col-4">
+                    <div class="p-2 rounded-3 bg-light text-center">
+                        <small class="text-muted d-block">Attempts</small>
+                        <strong class="fs-5 text-dark">${count}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 rounded-3 bg-light text-center">
+                        <small class="text-muted d-block">Best Score</small>
+                        <strong class="fs-5 text-success">${best}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 rounded-3 bg-light text-center">
+                        <small class="text-muted d-block">Latest Score</small>
+                        <strong class="fs-5 text-primary">${latest}</strong>
+                    </div>
+                </div>
+            `;
+
+            const list = document.getElementById('modalAttemptsList');
+            list.innerHTML = '';
+
+            if (atts.length === 0) {
+                list.innerHTML = '<div class="text-center py-4 text-muted">No attempts recorded yet. Click Reattempt below to take this quiz!</div>';
+            } else {
+                atts.slice().reverse().forEach((att, idx) => {
+                    const originalIndex = atts.length - idx;
+                    const d = new Date(att.completedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const badgeClass = (att.score >= 70) ? 'bg-success text-white' : ((att.score >= 50) ? 'bg-warning text-dark' : 'bg-danger text-white');
+
+                    const item = document.createElement('div');
+                    item.className = 'p-3 rounded-3 border bg-white d-flex justify-content-between align-items-center';
+                    item.innerHTML = `
+                        <div>
+                            <div class="fw-bold text-dark">Attempt #${att.attemptNumber || originalIndex}</div>
+                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${d} &bull; ${att.upToMarkCount || 0}/${att.totalQuestions || 0} Up to Mark</small>
+                        </div>
+                        <span class="badge ${badgeClass} fs-6 px-3 py-2 fw-bold">${att.score}%</span>
+                    `;
+                    list.appendChild(item);
                 });
-            } catch (e) {}
+            }
+
+            document.getElementById('modalReattemptBtn').onclick = () => {
+                if (attemptsModalInstance) attemptsModalInstance.hide();
+                startAttempt(quizId);
+            };
+
+            if (!attemptsModalInstance) {
+                attemptsModalInstance = new bootstrap.Modal(document.getElementById('attemptsModal'));
+            }
+            attemptsModalInstance.show();
+        }
+
+        async function deleteQuiz(id) {
+            if (!confirm('Are you sure you want to delete this quiz and all its attempt history from your database?')) return;
+            try {
+                const res = await fetch(`/api/quiz/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadAllQuizzes();
+                }
+            } catch (e) {
+                alert('Failed to delete quiz.');
+            }
         }
 
         function escapeHtml(str) {
@@ -719,6 +1043,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             loadSavedNotes();
+            loadAllQuizzes();
         });
     </script>
 </body>

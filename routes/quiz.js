@@ -151,6 +151,36 @@ function evaluateAnswerFallback(question, modelAnswer, keyPoints, userAnswer) {
     };
 }
 
+router.get("/", async (req, res) => {
+    try {
+        const quizzes = await Quiz.find({ userId: req.userId }).sort({ updatedAt: -1 });
+        res.json(quizzes);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch quizzes." });
+    }
+});
+
+router.get("/history", async (req, res) => {
+    try {
+        const quizzes = await Quiz.find({ userId: req.userId, attemptsCount: { $gt: 0 } }).sort({ updatedAt: -1 }).limit(20);
+        res.json(quizzes);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch quiz history." });
+    }
+});
+
+router.get("/:id", async (req, res) => {
+    try {
+        const quiz = await Quiz.findOne({ _id: req.params.id, userId: req.userId });
+        if (!quiz) {
+            return res.status(404).json({ error: "Quiz not found." });
+        }
+        res.json(quiz);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch quiz." });
+    }
+});
+
 router.post("/generate", async (req, res) => {
     try {
         let { noteId, title, content, type, count, difficulty } = req.body;
@@ -173,7 +203,10 @@ router.post("/generate", async (req, res) => {
         title = title || "Custom Study Notes";
         content = content || title;
 
-        const workerUrl = process.env.CLOUDFLARE_WORKER_URL;
+        let generatedQuestions = [];
+        let engineSource = "gradelift-ai";
+
+        const workerUrl = process.env.AI_WORKER_URL;
         if (workerUrl && typeof fetch === "function") {
             try {
                 const controller = new AbortController();
@@ -190,26 +223,91 @@ router.post("/generate", async (req, res) => {
                 if (response.ok) {
                     const aiData = await response.json();
                     if (aiData && Array.isArray(aiData.questions) && aiData.questions.length > 0) {
-                        return res.json({
-                            source: "cloudflare-ai",
-                            title: aiData.title || title,
-                            type: type,
-                            difficulty: difficulty,
-                            questions: aiData.questions
-                        });
+                        generatedQuestions = aiData.questions;
+                        engineSource = "gradelift-ai";
                     }
                 }
             } catch (err) {
             }
         }
 
-        const fallbackQuiz = buildFallbackQuiz(title, content, type, count, difficulty);
-        res.json({
-            source: "local-engine",
-            ...fallbackQuiz
+        if (!generatedQuestions.length) {
+            const fallback = buildFallbackQuiz(title, content, type, count, difficulty);
+            generatedQuestions = fallback.questions;
+            engineSource = "gradelift-ai";
+        }
+
+        const quiz = new Quiz({
+            userId: req.userId,
+            noteId: noteId || undefined,
+            title: title.trim(),
+            type: type,
+            difficulty: difficulty,
+            totalQuestions: generatedQuestions.length,
+            questions: generatedQuestions,
+            attemptsCount: 0,
+            bestScore: null,
+            lastScore: null,
+            attempts: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        await quiz.save();
+
+        res.status(201).json({
+            success: true,
+            source: engineSource,
+            quiz: quiz
         });
     } catch (err) {
         res.status(500).json({ error: err.message || "Failed to generate quiz." });
+    }
+});
+
+router.post("/:id/attempt", async (req, res) => {
+    try {
+        const { results, score, upToMarkCount } = req.body;
+        const quiz = await Quiz.findOne({ _id: req.params.id, userId: req.userId });
+
+        if (!quiz) {
+            return res.status(404).json({ error: "Quiz not found." });
+        }
+
+        const attemptNumber = quiz.attempts.length + 1;
+        const finalScore = (typeof score === "number") ? score : 0;
+        const finalUpToMark = (typeof upToMarkCount === "number") ? upToMarkCount : 0;
+
+        const newAttempt = {
+            attemptNumber: attemptNumber,
+            score: finalScore,
+            upToMarkCount: finalUpToMark,
+            totalQuestions: quiz.totalQuestions || quiz.questions.length,
+            results: Array.isArray(results) ? results : [],
+            completedAt: new Date()
+        };
+
+        quiz.attempts.push(newAttempt);
+        quiz.attemptsCount = quiz.attempts.length;
+        quiz.lastScore = finalScore;
+        quiz.bestScore = (quiz.bestScore === null) ? finalScore : Math.max(quiz.bestScore, finalScore);
+        quiz.updatedAt = new Date();
+
+        await quiz.save();
+
+        await Progress.findOneAndUpdate(
+            { userId: req.userId },
+            { $inc: { sessionsCompleted: 1 }, $set: { updatedAt: new Date() } },
+            { upsert: true }
+        );
+
+        res.json({
+            success: true,
+            quiz: quiz,
+            latestAttempt: newAttempt
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message || "Failed to save attempt." });
     }
 });
 
@@ -217,7 +315,7 @@ router.post("/analyze", async (req, res) => {
     try {
         const { question, modelAnswer, keyPoints, userAnswer } = req.body;
 
-        const workerUrl = process.env.CLOUDFLARE_WORKER_URL;
+        const workerUrl = process.env.AI_WORKER_URL;
         if (workerUrl && typeof fetch === "function") {
             try {
                 const controller = new AbortController();
@@ -235,7 +333,7 @@ router.post("/analyze", async (req, res) => {
                     const analysis = await response.json();
                     if (analysis && typeof analysis.score !== "undefined") {
                         return res.json({
-                            source: "cloudflare-ai",
+                            source: "gradelift-ai",
                             ...analysis
                         });
                     }
@@ -246,7 +344,7 @@ router.post("/analyze", async (req, res) => {
 
         const evaluation = evaluateAnswerFallback(question, modelAnswer, keyPoints, userAnswer);
         res.json({
-            source: "local-engine",
+            source: "gradelift-ai",
             ...evaluation
         });
     } catch (err) {
@@ -256,53 +354,45 @@ router.post("/analyze", async (req, res) => {
 
 router.post("/save", async (req, res) => {
     try {
-        const { noteId, title, type, difficulty, totalQuestions, score, questions, results } = req.body;
+        const { quizId, results, score, upToMarkCount } = req.body;
 
-        const quiz = new Quiz({
-            userId: req.userId,
-            noteId: noteId || undefined,
-            title: title || "Study Quiz",
-            type: type || "mcq",
-            difficulty: difficulty || "medium",
-            totalQuestions: Number(totalQuestions) || (questions ? questions.length : 0),
-            score: Number(score) || 0,
-            questions: Array.isArray(questions) ? questions : [],
-            results: Array.isArray(results) ? results : [],
-            completedAt: new Date()
-        });
+        if (quizId) {
+            const quiz = await Quiz.findOne({ _id: quizId, userId: req.userId });
+            if (quiz) {
+                const attemptNumber = quiz.attempts.length + 1;
+                const finalScore = Number(score) || 0;
+                const finalUpToMark = Number(upToMarkCount) || 0;
 
-        await quiz.save();
+                const newAttempt = {
+                    attemptNumber: attemptNumber,
+                    score: finalScore,
+                    upToMarkCount: finalUpToMark,
+                    totalQuestions: quiz.totalQuestions || quiz.questions.length,
+                    results: Array.isArray(results) ? results : [],
+                    completedAt: new Date()
+                };
 
-        await Progress.findOneAndUpdate(
-            { userId: req.userId },
-            { $inc: { sessionsCompleted: 1 }, $set: { updatedAt: new Date() } },
-            { upsert: true }
-        );
+                quiz.attempts.push(newAttempt);
+                quiz.attemptsCount = quiz.attempts.length;
+                quiz.lastScore = finalScore;
+                quiz.bestScore = (quiz.bestScore === null) ? finalScore : Math.max(quiz.bestScore, finalScore);
+                quiz.updatedAt = new Date();
 
-        res.status(201).json({ success: true, quiz });
-    } catch (err) {
-        res.status(500).json({ error: err.message || "Failed to save quiz attempt." });
-    }
-});
+                await quiz.save();
 
-router.get("/history", async (req, res) => {
-    try {
-        const quizzes = await Quiz.find({ userId: req.userId }).sort({ completedAt: -1 }).limit(20);
-        res.json(quizzes);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch quiz history." });
-    }
-});
+                await Progress.findOneAndUpdate(
+                    { userId: req.userId },
+                    { $inc: { sessionsCompleted: 1 }, $set: { updatedAt: new Date() } },
+                    { upsert: true }
+                );
 
-router.get("/:id", async (req, res) => {
-    try {
-        const quiz = await Quiz.findOne({ _id: req.params.id, userId: req.userId });
-        if (!quiz) {
-            return res.status(404).json({ error: "Quiz attempt not found." });
+                return res.json({ success: true, quiz, latestAttempt: newAttempt });
+            }
         }
-        res.json(quiz);
+
+        res.status(400).json({ error: "Quiz ID is required." });
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch quiz." });
+        res.status(500).json({ error: err.message || "Failed to record quiz attempt." });
     }
 });
 
