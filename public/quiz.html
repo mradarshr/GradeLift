@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator - GradeLift</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="quiz.html" class="active"><i class="bi bi-robot"></i> AI Quiz</a>
+                <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <div class="top-bar">
+                <div class="mb-2 mb-md-0">
+                    <h4 class="fw-bold mb-0">AI Quiz Master <span class="badge bg-primary fs-6 fw-normal ms-2"><i class="bi bi-stars"></i> Powered by Cloudflare AI</span></h4>
+                    <small class="text-muted">Generate instant quizzes from your notes and evaluate your answers with deep AI feedback</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="showGeneratorView()"><i class="bi bi-plus-circle me-1"></i> New Quiz</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadHistoryView()"><i class="bi bi-clock-history me-1"></i> History</button>
+                </div>
+            </div>
+
+            <div id="generatorSection" class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card p-4 border-0 shadow-sm rounded-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-magic me-2"></i>Generate Quiz from Notes</h5>
+                            <span class="quiz-source-pill"><i class="bi bi-cpu"></i> LLM Ready</span>
+                        </div>
+                        <p class="text-muted small">Choose one of your saved study notes or paste any topic text below. The AI will synthesize questions, distractors, and key evaluation rubrics.</p>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Select from Saved Notes</label>
+                            <select id="savedNotesSelect" class="form-select rounded-3" onchange="onNoteSelected()">
+                                <option value="">-- Choose a saved note or enter custom text --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Quiz Topic / Title</label>
+                            <input type="text" id="quizTitleInput" class="form-control rounded-3" placeholder="e.g. Photosynthesis & Cellular Respiration">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Notes / Study Material</label>
+                            <textarea id="quizContentInput" class="form-control rounded-3" rows="6" placeholder="Paste definitions, formulas, concepts, or paragraphs here..."></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Question Format</label>
+                                <select id="quizTypeSelect" class="form-select rounded-3">
+                                    <option value="mcq">MCQ (Multiple Choice)</option>
+                                    <option value="short_answer">Conceptual (Short Answer)</option>
+                                    <option value="mixed">Mixed (MCQ + Conceptual)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Difficulty</label>
+                                <select id="quizDifficultySelect" class="form-select rounded-3">
+                                    <option value="easy">Easy (Fundamentals)</option>
+                                    <option value="medium" selected>Medium (Standard)</option>
+                                    <option value="hard">Hard (Analytical)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Number of Questions</label>
+                                <select id="quizCountSelect" class="form-select rounded-3">
+                                    <option value="3">3 Questions (Quick)</option>
+                                    <option value="5" selected>5 Questions (Recommended)</option>
+                                    <option value="8">8 Questions (Deep Practice)</option>
+                                    <option value="10">10 Questions (Mastery)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="generateBtn" class="btn btn-primary btn-lg rounded-3 fw-bold w-100" onclick="startGenerateQuiz()">
+                            <i class="bi bi-lightning-charge-fill me-2"></i> Generate AI Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card p-4 border-0 shadow-sm rounded-4 h-100 bg-white">
+                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>How Answer Analysis Works</h5>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #faf5ff;">
+                                <i class="bi bi-ui-radios-grid text-primary fs-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Multiple Choice (MCQ)</h6>
+                                    <p class="text-muted small mb-0">Instantly validates your choice, exposes smart distractors, and provides clear reference explanations.</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #eff6ff;">
+                                <i class="bi bi-chat-square-text text-info fs-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Conceptual Answer Analysis</h6>
+                                    <p class="text-muted small mb-0">Type your answer in your own words. Cloudflare AI checks if your answer is <strong>up to mark</strong>, scores your depth, highlights matched concepts, and spots missing points.</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background: #ecfdf5;">
+                                <i class="bi bi-trophy text-success fs-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Progress & Retention</h6>
+                                    <p class="text-muted small mb-0">Every completed quiz increases your session streak and helps solidify retention before exams.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top">
+                            <h6 class="fw-bold text-muted small mb-2">QUICK TIPS</h6>
+                            <ul class="text-muted small ps-3 mb-0">
+                                <li class="mb-1">Include key definitions and bullet points in notes for richer quizzes.</li>
+                                <li class="mb-1">Use the Conceptual mode to prepare for long-form exam questions.</li>
+                                <li>Review your past performance in the History view anytime.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quizActiveSection" class="d-none">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                        <div>
+                            <span id="activeQuizSource" class="quiz-source-pill me-2"><i class="bi bi-cpu"></i> GradeLift AI</span>
+                            <span id="activeQuizDifficulty" class="badge bg-secondary-subtle text-dark text-capitalize">Medium</span>
+                            <h4 id="activeQuizTitle" class="fw-bold mt-2 mb-0">Quiz Title</h4>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted small fw-bold">QUESTION</span>
+                            <h5 class="fw-bold mb-0 text-primary"><span id="currentQuestionNum">1</span> / <span id="totalQuestionsNum">5</span></h5>
+                        </div>
+                    </div>
+
+                    <div class="progress mb-4" style="height: 8px;">
+                        <div id="quizProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 20%;"></div>
+                    </div>
+
+                    <div id="questionContainer"></div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <button id="prevQuestionBtn" class="btn btn-outline-secondary rounded-3" onclick="prevQuestion()" disabled>
+                            <i class="bi bi-arrow-left me-1"></i> Previous
+                        </button>
+                        <div class="d-flex gap-2">
+                            <button id="nextQuestionBtn" class="btn btn-primary rounded-3 px-4" onclick="nextQuestion()">
+                                Next <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                            <button id="finishQuizBtn" class="btn btn-success rounded-3 px-4 d-none" onclick="finishQuiz()">
+                                Finish Quiz <i class="bi bi-check-circle-fill ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quizSummarySection" class="d-none">
+                <div class="card border-0 shadow-sm rounded-4 p-5 text-center mb-4 bg-white">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle p-3" style="background: #f5f3ff; width: 80px; height: 80px;">
+                            <i class="bi bi-trophy-fill fs-1 text-primary"></i>
+                        </span>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">Quiz Completed!</h3>
+                    <p class="text-muted mb-4" id="summarySubtitle">Here is how you performed on this study session.</p>
+
+                    <div class="row justify-content-center g-3 mb-4">
+                        <div class="col-md-3 col-6">
+                            <div class="p-3 rounded-4" style="background: #faf5ff;">
+                                <div class="score-badge-huge text-primary" id="summaryScorePercent">0%</div>
+                                <span class="text-muted small fw-bold">OVERALL SCORE</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="p-3 rounded-4" style="background: #ecfdf5;">
+                                <div class="score-badge-huge text-success" id="summaryCorrectCount">0/0</div>
+                                <span class="text-muted small fw-bold">QUESTIONS UP TO MARK</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary rounded-3 px-4 fw-bold" onclick="showGeneratorView()">
+                            <i class="bi bi-arrow-repeat me-1"></i> Take Another Quiz
+                        </button>
+                        <button class="btn btn-outline-secondary rounded-3 px-4" onclick="loadHistoryView()">
+                            <i class="bi bi-clock-history me-1"></i> View History
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Detailed Question Review</h5>
+                    <div id="detailedReviewContainer"></div>
+                </div>
+            </div>
+
+            <div id="quizHistorySection" class="d-none">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Past Quiz Attempts</h5>
+                        <button class="btn btn-sm btn-primary rounded-3" onclick="showGeneratorView()"><i class="bi bi-plus-lg me-1"></i> New Quiz</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Quiz Topic</th>
+                                    <th>Type</th>
+                                    <th>Difficulty</th>
+                                    <th>Score</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Loading quiz history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let studentAnswers = {};
+        let savedNotesList = [];
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (e) {}
+            window.location.href = 'login.html';
+        }
+
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (!res.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadSavedNotes() {
+            try {
+                const res = await fetch('/api/notes');
+                if (res.ok) {
+                    savedNotesList = await res.json();
+                    const select = document.getElementById('savedNotesSelect');
+                    select.innerHTML = '<option value="">-- Choose a saved note or enter custom text --</option>';
+                    savedNotesList.forEach(note => {
+                        const opt = document.createElement('option');
+                        opt.value = note._id;
+                        opt.textContent = `${note.title} (${note.date || 'Note'})`;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function onNoteSelected() {
+            const noteId = document.getElementById('savedNotesSelect').value;
+            if (!noteId) return;
+            const found = savedNotesList.find(n => n._id === noteId);
+            if (found) {
+                document.getElementById('quizTitleInput').value = found.title || '';
+                document.getElementById('quizContentInput').value = found.content || '';
+            }
+        }
+
+        function showGeneratorView() {
+            document.getElementById('generatorSection').classList.remove('d-none');
+            document.getElementById('quizActiveSection').classList.add('d-none');
+            document.getElementById('quizSummarySection').classList.add('d-none');
+            document.getElementById('quizHistorySection').classList.add('d-none');
+        }
+
+        async function loadHistoryView() {
+            document.getElementById('generatorSection').classList.add('d-none');
+            document.getElementById('quizActiveSection').classList.add('d-none');
+            document.getElementById('quizSummarySection').classList.add('d-none');
+            document.getElementById('quizHistorySection').classList.remove('d-none');
+
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading past quizzes...</td></tr>';
+
+            try {
+                const res = await fetch('/api/quiz/history');
+                if (!res.ok) throw new Error('Failed to load history');
+                const history = await res.json();
+
+                if (!history || history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No quizzes taken yet. Generate your first quiz above!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                history.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const d = new Date(item.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    const scorePct = item.score !== undefined ? `${item.score}%` : 'N/A';
+                    const scoreBadge = (item.score >= 70) ? 'bg-success-subtle text-success' : ((item.score >= 40) ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger');
+
+                    tr.innerHTML = `
+                        <td><small class="text-muted">${d}</small></td>
+                        <td class="fw-bold">${escapeHtml(item.title)}</td>
+                        <td><span class="badge bg-light text-dark text-uppercase">${item.type}</span></td>
+                        <td><span class="badge bg-light text-secondary text-capitalize">${item.difficulty}</span></td>
+                        <td><span class="badge ${scoreBadge} fw-bold px-2 py-1">${scorePct}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteQuizHistory('${item._id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Failed to load quiz history.</td></tr>';
+            }
+        }
+
+        async function deleteQuizHistory(id) {
+            if (!confirm('Are you sure you want to delete this quiz record?')) return;
+            try {
+                const res = await fetch(`/api/quiz/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadHistoryView();
+                }
+            } catch (e) {}
+        }
+
+        async function startGenerateQuiz() {
+            const title = document.getElementById('quizTitleInput').value.trim();
+            const content = document.getElementById('quizContentInput').value.trim();
+            const type = document.getElementById('quizTypeSelect').value;
+            const difficulty = document.getElementById('quizDifficultySelect').value;
+            const count = document.getElementById('quizCountSelect').value;
+            const noteId = document.getElementById('savedNotesSelect').value || null;
+
+            if (!title && !content) {
+                alert('Please enter a quiz topic or paste some study notes to generate questions.');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Analyzing Notes & Generating Quiz...';
+
+            try {
+                const res = await fetch('/api/quiz/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ noteId, title, content, type, difficulty, count })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to generate quiz');
+                }
+
+                currentQuiz = await res.json();
+                studentAnswers = {};
+                currentQuestionIndex = 0;
+
+                document.getElementById('generatorSection').classList.add('d-none');
+                document.getElementById('quizSummarySection').classList.add('d-none');
+                document.getElementById('quizHistorySection').classList.add('d-none');
+                document.getElementById('quizActiveSection').classList.remove('d-none');
+
+                document.getElementById('activeQuizTitle').textContent = currentQuiz.title || title;
+                document.getElementById('activeQuizDifficulty').textContent = currentQuiz.difficulty || difficulty;
+                document.getElementById('activeQuizSource').innerHTML = currentQuiz.source === 'cloudflare-ai'
+                    ? '<i class="bi bi-cloud-check-fill text-primary"></i> Cloudflare AI Worker'
+                    : '<i class="bi bi-cpu text-secondary"></i> GradeLift AI Engine';
+
+                renderCurrentQuestion();
+            } catch (err) {
+                alert(err.message || 'Error creating quiz. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function renderCurrentQuestion() {
+            if (!currentQuiz || !currentQuiz.questions || !currentQuiz.questions.length) return;
+
+            const total = currentQuiz.questions.length;
+            const q = currentQuiz.questions[currentQuestionIndex];
+
+            document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestionsNum').textContent = total;
+            document.getElementById('quizProgressBar').style.width = `${((currentQuestionIndex + 1) / total) * 100}%`;
+
+            document.getElementById('prevQuestionBtn').disabled = (currentQuestionIndex === 0);
+            if (currentQuestionIndex === total - 1) {
+                document.getElementById('nextQuestionBtn').classList.add('d-none');
+                document.getElementById('finishQuizBtn').classList.remove('d-none');
+            } else {
+                document.getElementById('nextQuestionBtn').classList.remove('d-none');
+                document.getElementById('finishQuizBtn').classList.add('d-none');
+            }
+
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '';
+
+            const card = document.createElement('div');
+            card.className = 'p-3 p-md-4 rounded-4 bg-light border';
+
+            if (q.type === 'mcq') {
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                let optionsHtml = '';
+                (q.options || []).forEach((opt, idx) => {
+                    const saved = studentAnswers[currentQuestionIndex];
+                    const isSelected = saved && saved.selectedOption === opt;
+                    const letter = letters[idx] || (idx + 1);
+                    optionsHtml += `
+                        <div class="quiz-option ${isSelected ? 'selected' : ''}" onclick="selectMcqOption(${idx}, '${escapeHtml(opt)}')">
+                            <span class="quiz-option-letter">${letter}</span>
+                            <span class="quiz-option-text">${escapeHtml(opt)}</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2">Multiple Choice</span>
+                    </div>
+                    <h5 class="fw-bold mb-4 text-dark lh-base">${escapeHtml(q.question)}</h5>
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        ${optionsHtml}
+                    </div>
+                `;
+            } else {
+                const saved = studentAnswers[currentQuestionIndex] || {};
+                const currentText = saved.userText || '';
+                const analysis = saved.analysis || null;
+
+                let analysisHtml = '';
+                if (analysis) {
+                    const isUpToMark = analysis.isUpToMark;
+                    const statusClass = isUpToMark ? 'analysis-uptomark' : (analysis.status === 'Incomplete' ? 'analysis-incomplete' : 'analysis-needs-work');
+                    const statusIcon = isUpToMark ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+
+                    let matchedChips = (analysis.matchedPoints || []).map(p => `<span class="point-chip point-chip-matched"><i class="bi bi-check2"></i> ${escapeHtml(p)}</span>`).join('');
+                    let missingChips = (analysis.missingPoints || []).map(p => `<span class="point-chip point-chip-missing"><i class="bi bi-x-circle"></i> ${escapeHtml(p)}</span>`).join('');
+
+                    analysisHtml = `
+                        <div class="analysis-card mt-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <span class="analysis-status-pill ${statusClass}"><i class="bi ${statusIcon}"></i> ${analysis.status} (${analysis.score}/100)</span>
+                                <small class="text-muted fw-bold">${isUpToMark ? 'Passed Criteria' : 'Needs Expansion'}</small>
+                            </div>
+                            <p class="mb-3 text-secondary">${escapeHtml(analysis.feedback)}</p>
+
+                            ${matchedChips ? `<div class="mb-2"><small class="text-muted fw-bold d-block mb-1">Concepts Covered:</small>${matchedChips}</div>` : ''}
+                            ${missingChips ? `<div class="mb-3"><small class="text-muted fw-bold d-block mb-1">Key Nuances to Add:</small>${missingChips}</div>` : ''}
+
+                            <div class="p-3 rounded-3 bg-light border small">
+                                <strong class="text-dark d-block mb-1"><i class="bi bi-info-circle me-1"></i> Model Reference Answer:</strong>
+                                <span class="text-muted">${escapeHtml(analysis.modelAnswer || q.modelAnswer || '')}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-info-subtle text-info fw-bold px-3 py-2">Conceptual Short Answer</span>
+                        <span class="small text-muted">Type your answer in your own words</span>
+                    </div>
+                    <h5 class="fw-bold mb-3 text-dark lh-base">${escapeHtml(q.question)}</h5>
+                    <div class="mb-3">
+                        <textarea id="shortAnswerInput" class="form-control rounded-3" rows="5" placeholder="Explain the concept clearly as taught in your notes...">${escapeHtml(currentText)}</textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Cloudflare AI will examine accuracy against core key points.</small>
+                        <button id="analyzeAnswerBtn" class="btn btn-sm btn-primary rounded-3 px-3 fw-bold" onclick="analyzeStudentAnswer()">
+                            <i class="bi bi-magic me-1"></i> Evaluate Answer
+                        </button>
+                    </div>
+                    ${analysisHtml}
+                `;
+            }
+
+            container.appendChild(card);
+        }
+
+        function selectMcqOption(idx, optionText) {
+            const q = currentQuiz.questions[currentQuestionIndex];
+            const isCorrect = (optionText === q.answer);
+            studentAnswers[currentQuestionIndex] = {
+                type: 'mcq',
+                selectedOption: optionText,
+                isCorrect: isCorrect,
+                score: isCorrect ? 100 : 0
+            };
+            renderCurrentQuestion();
+        }
+
+        async function analyzeStudentAnswer() {
+            const q = currentQuiz.questions[currentQuestionIndex];
+            const input = document.getElementById('shortAnswerInput');
+            const text = input ? input.value.trim() : '';
+
+            if (!text || text.length < 5) {
+                alert('Please write an answer before requesting AI evaluation.');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeAnswerBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Analyzing...';
+
+            try {
+                const res = await fetch('/api/quiz/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: q.question,
+                        modelAnswer: q.modelAnswer || '',
+                        keyPoints: q.keyPoints || [],
+                        userAnswer: text
+                    })
+                });
+
+                if (!res.ok) throw new Error('Failed to evaluate answer');
+                const analysis = await res.json();
+
+                studentAnswers[currentQuestionIndex] = {
+                    type: 'short_answer',
+                    userText: text,
+                    analysis: analysis,
+                    score: analysis.score || 0,
+                    isCorrect: !!analysis.isUpToMark
+                };
+
+                renderCurrentQuestion();
+            } catch (err) {
+                alert(err.message || 'Evaluation failed. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function prevQuestion() {
+            saveCurrentInput();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderCurrentQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            saveCurrentInput();
+            if (currentQuestionIndex < currentQuiz.questions.length - 1) {
+                currentQuestionIndex++;
+                renderCurrentQuestion();
+            }
+        }
+
+        function saveCurrentInput() {
+            const q = currentQuiz.questions[currentQuestionIndex];
+            if (q.type === 'short_answer') {
+                const input = document.getElementById('shortAnswerInput');
+                if (input) {
+                    studentAnswers[currentQuestionIndex] = studentAnswers[currentQuestionIndex] || {};
+                    studentAnswers[currentQuestionIndex].userText = input.value;
+                }
+            }
+        }
+
+        async function finishQuiz() {
+            saveCurrentInput();
+            const total = currentQuiz.questions.length;
+            let totalScoreAcc = 0;
+            let upToMarkCount = 0;
+            const results = [];
+
+            for (let i = 0; i < total; i++) {
+                const q = currentQuiz.questions[i];
+                const ans = studentAnswers[i] || {};
+                let qScore = ans.score || 0;
+                let passed = false;
+
+                if (q.type === 'mcq') {
+                    passed = (ans.selectedOption === q.answer);
+                    qScore = passed ? 100 : 0;
+                } else {
+                    passed = ans.analysis ? !!ans.analysis.isUpToMark : false;
+                }
+
+                if (passed) upToMarkCount++;
+                totalScoreAcc += qScore;
+
+                results.push({
+                    questionId: q.id,
+                    type: q.type,
+                    question: q.question,
+                    studentAnswer: q.type === 'mcq' ? (ans.selectedOption || 'No answer') : (ans.userText || 'No answer'),
+                    correctAnswer: q.type === 'mcq' ? q.answer : q.modelAnswer,
+                    score: qScore,
+                    isUpToMark: passed,
+                    analysis: ans.analysis || null,
+                    explanation: q.explanation || null
+                });
+            }
+
+            const overallPct = Math.round(totalScoreAcc / total);
+
+            document.getElementById('quizActiveSection').classList.add('d-none');
+            document.getElementById('quizSummarySection').classList.remove('d-none');
+
+            document.getElementById('summaryScorePercent').textContent = `${overallPct}%`;
+            document.getElementById('summaryCorrectCount').textContent = `${upToMarkCount}/${total}`;
+
+            let subtitle = 'Great effort! Keep practicing to master every concept.';
+            if (overallPct >= 85) subtitle = 'Outstanding performance! You have a firm grasp of this material.';
+            else if (overallPct >= 65) subtitle = 'Solid work! A quick review of the missed points will make it perfect.';
+            document.getElementById('summarySubtitle').textContent = subtitle;
+
+            const reviewContainer = document.getElementById('detailedReviewContainer');
+            reviewContainer.innerHTML = '';
+
+            results.forEach((r, idx) => {
+                const item = document.createElement('div');
+                item.className = 'p-3 rounded-4 mb-3 border ' + (r.isUpToMark ? 'border-success-subtle bg-white' : 'border-danger-subtle bg-white');
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge ${r.isUpToMark ? 'bg-success' : 'bg-danger'}">Question ${idx + 1} &bull; ${r.score}/100</span>
+                        <span class="small text-muted text-uppercase fw-bold">${r.type}</span>
+                    </div>
+                    <h6 class="fw-bold mb-2 text-dark">${escapeHtml(r.question)}</h6>
+                    <div class="small mb-1">
+                        <strong>Your Response:</strong> <span class="${r.isUpToMark ? 'text-success' : 'text-danger'}">${escapeHtml(r.studentAnswer)}</span>
+                    </div>
+                    <div class="small text-muted">
+                        <strong>Reference:</strong> ${escapeHtml(r.correctAnswer || r.explanation || '')}
+                    </div>
+                `;
+                reviewContainer.appendChild(item);
+            });
+
+            try {
+                await fetch('/api/quiz/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: currentQuiz.title,
+                        type: currentQuiz.type,
+                        difficulty: currentQuiz.difficulty,
+                        totalQuestions: total,
+                        score: overallPct,
+                        questions: currentQuiz.questions,
+                        results: results
+                    })
+                });
+            } catch (e) {}
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadSavedNotes();
+        });
+    </script>
+</body>
+</html>

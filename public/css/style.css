@@ -566,3 +566,200 @@ footer {
         padding: 10px;
     }
 }
+
+.onboarding-banner {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(124, 58, 237, 0.22);
+}
+
+.onboarding-banner::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    bottom: -40px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+
+.journey-step {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    color: white;
+    display: block;
+}
+
+.journey-step:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-3px);
+    color: white;
+}
+
+.journey-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: white;
+    color: #7c3aed;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-right: 8px;
+}
+
+.quiz-option {
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #334155;
+    text-align: left;
+    width: 100%;
+}
+
+.quiz-option:hover {
+    border-color: #a78bfa;
+    background: #faf5ff;
+    transform: translateX(4px);
+}
+
+.quiz-option.selected {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    font-weight: 600;
+}
+
+.quiz-option.correct {
+    border-color: #10b981 !important;
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+}
+
+.quiz-option.incorrect {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+}
+
+.quiz-option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    margin-right: 14px;
+    flex-shrink: 0;
+}
+
+.quiz-option.selected .quiz-option-letter {
+    background: #7c3aed;
+    color: white;
+}
+
+.quiz-option.correct .quiz-option-letter {
+    background: #10b981;
+    color: white;
+}
+
+.quiz-option.incorrect .quiz-option-letter {
+    background: #ef4444;
+    color: white;
+}
+
+.analysis-card {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 22px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.analysis-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.analysis-uptomark {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.analysis-needs-work {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.analysis-incomplete {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.point-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin: 4px;
+}
+
+.point-chip-matched {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.point-chip-missing {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.score-badge-huge {
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.quiz-source-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #6d28d9;
+}

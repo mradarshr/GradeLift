@@ -31,6 +31,7 @@
                 <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
                 <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
                 <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="quiz.html"><i class="bi bi-robot"></i> AI Quiz</a>
                 <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
                 <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
                 <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
@@ -52,6 +53,8 @@
                     <i class="bi bi-person-circle fs-4 text-primary px-1" style="cursor: pointer;"></i>
                 </div>
             </div>
+
+            <div id="onboardingBannerContainer"></div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-3 col-6">
@@ -159,6 +162,63 @@
             var totalHours = progress.hoursBySubject.data.reduce(function(a, b) { return a + b; }, 0);
             var now = new Date();
             var upcoming = exams.filter(function(e) { return new Date(e.date) > now; }).length;
+
+            var bannerEl = document.getElementById("onboardingBannerContainer");
+            if (total === 0 && timetable.length === 0 && exams.length === 0) {
+                bannerEl.innerHTML = '<div class="onboarding-banner mb-4">' +
+                    '<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">' +
+                    '<div>' +
+                    '<h3 class="fw-bold mb-1">Welcome to GradeLift! 🚀 Let\'s Start Your Journey</h3>' +
+                    '<p class="mb-0 text-white-50">Your personal academic dashboard is completely fresh. Follow these simple steps to supercharge your studies:</p>' +
+                    '</div>' +
+                    '<span class="badge bg-white text-primary fw-bold px-3 py-2 rounded-pill fs-6 mt-2 mt-md-0"><i class="bi bi-compass"></i> Onboarding Roadmap</span>' +
+                    '</div>' +
+                    '<div class="row g-3 mt-1">' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="timetable.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">1</span> Weekly Timetable</div>' +
+                    '<small class="text-white-50">Map your class schedules and lectures to never miss a session.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="tasks.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">2</span> Task Management</div>' +
+                    '<small class="text-white-50">Organize assignments, homework, and deadlines with priority tags.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="quiz.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">3</span> AI Quiz Generator</div>' +
+                    '<small class="text-white-50">Turn notes into practice MCQs and conceptual tests analyzed by AI.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="pomodoro.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">4</span> Focus Pomodoro</div>' +
+                    '<small class="text-white-50">Maintain deep study sessions with smooth circular countdown timer.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="notes.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">5</span> Smart Study Notes</div>' +
+                    '<small class="text-white-50">Store organized notes ready for quick revision and quiz synthesis.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-sm-6">' +
+                    '<a href="exam-countdown.html" class="journey-step">' +
+                    '<div class="fw-bold mb-1"><span class="journey-step-num">6</span> Exam Tracker</div>' +
+                    '<small class="text-white-50">Stay ahead of final exams, midterms, and project submissions.</small>' +
+                    '</a>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top border-white-50">' +
+                    '<a href="timetable.html" class="btn btn-light text-primary fw-bold px-4 py-2"><i class="bi bi-calendar-check me-2"></i> Start with Timetable</a>' +
+                    '<a href="tasks.html" class="btn btn-outline-light fw-bold px-4 py-2"><i class="bi bi-check2-square me-2"></i> Add Your First Task</a>' +
+                    '</div>' +
+                    '</div>';
+            } else {
+                bannerEl.innerHTML = '';
+            }
 
             document.getElementById("totalTasks").textContent = total;
             document.getElementById("completedTasks").textContent = completed;

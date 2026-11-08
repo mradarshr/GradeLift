@@ -11,6 +11,7 @@ const timetableRoutes = require("./routes/timetable");
 const noteRoutes = require("./routes/notes");
 const examRoutes = require("./routes/exams");
 const progressRoutes = require("./routes/progress");
+const quizRoutes = require("./routes/quiz");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,10 +53,11 @@ apiRouter.use("/timetable", timetableRoutes);
 apiRouter.use("/notes", noteRoutes);
 apiRouter.use("/exams", examRoutes);
 apiRouter.use("/progress", progressRoutes);
+apiRouter.use("/quiz", quizRoutes);
 
 app.use("/api", apiRouter);
 
-const pages = ["login", "signup", "dashboard", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown"];
+const pages = ["login", "signup", "dashboard", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown", "quiz"];
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));

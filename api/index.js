@@ -9,6 +9,7 @@ const timetableRoutes = require("../routes/timetable");
 const noteRoutes = require("../routes/notes");
 const examRoutes = require("../routes/exams");
 const progressRoutes = require("../routes/progress");
+const quizRoutes = require("../routes/quiz");
 
 const app = express();
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -49,6 +50,7 @@ apiRouter.use("/timetable", timetableRoutes);
 apiRouter.use("/notes", noteRoutes);
 apiRouter.use("/exams", examRoutes);
 apiRouter.use("/progress", progressRoutes);
+apiRouter.use("/quiz", quizRoutes);
 
 app.use("/api", apiRouter);
 app.use("/", apiRouter);
