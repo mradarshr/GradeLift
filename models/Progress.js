@@ -20,11 +20,11 @@ const progressSchema = new mongoose.Schema({
     hoursBySubject: {
         labels: {
             type: [String],
-            default: ["Math", "Physics", "Chemistry", "English", "CS"]
+            default: []
         },
         data: {
             type: [Number],
-            default: [0, 0, 0, 0, 0]
+            default: []
         }
     },
     sessionsCompleted: {

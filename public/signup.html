@@ -50,7 +50,7 @@
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
                         <input type="password" class="form-control" id="confirmPassword" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                    <button type="submit" id="signupBtn" class="btn btn-primary w-100">Sign Up</button>
                 </form>
                 <p class="text-center mt-3">Already have an account? <a href="login.html">Login</a></p>
             </div>
@@ -68,6 +68,7 @@
     <script>
         document.getElementById("signupForm").addEventListener("submit", async function(e) {
             e.preventDefault();
+            var btn = document.getElementById("signupBtn");
             var fullName = document.getElementById("fullName").value.trim();
             var email = document.getElementById("email").value.trim();
             var password = document.getElementById("password").value;
@@ -82,6 +83,8 @@
                 errorDiv.classList.remove("d-none");
                 return;
             }
+
+            setBtnLoading(btn, true, "Creating Account...");
 
             try {
                 var res = await apiRequest("/api/auth/signup", "POST", {
@@ -99,6 +102,7 @@
             } catch (err) {
                 errorDiv.textContent = err.message || "Registration failed.";
                 errorDiv.classList.remove("d-none");
+                setBtnLoading(btn, false);
             }
         });
     </script>

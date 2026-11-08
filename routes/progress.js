@@ -16,8 +16,8 @@ router.get("/", async (req, res) => {
                     data: [0, 0, 0, 0, 0, 0, 0]
                 },
                 hoursBySubject: {
-                    labels: ["Math", "Physics", "Chemistry", "English", "CS"],
-                    data: [0, 0, 0, 0, 0]
+                    labels: [],
+                    data: []
                 },
                 sessionsCompleted: 0
             });

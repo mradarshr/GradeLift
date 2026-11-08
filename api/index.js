@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const authRoutes = require("../routes/auth");
+const subjectRoutes = require("../routes/subjects");
 const taskRoutes = require("../routes/tasks");
 const timetableRoutes = require("../routes/timetable");
 const noteRoutes = require("../routes/notes");
@@ -45,6 +46,7 @@ app.use(async (req, res, next) => {
 
 const apiRouter = express.Router();
 apiRouter.use("/auth", authRoutes);
+apiRouter.use("/subjects", subjectRoutes);
 apiRouter.use("/tasks", taskRoutes);
 apiRouter.use("/timetable", timetableRoutes);
 apiRouter.use("/notes", noteRoutes);

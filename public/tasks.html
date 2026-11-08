@@ -28,6 +28,7 @@
             </div>
             <nav class="sidebar-nav flex-grow-1">
                 <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="subjects.html"><i class="bi bi-book"></i> Subjects</a>
                 <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
                 <a href="tasks.html" class="active"><i class="bi bi-check2-square"></i> Tasks</a>
                 <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
@@ -191,16 +192,17 @@
         async function loadTasks() {
             document.getElementById('taskSkeleton').classList.remove('d-none');
             document.getElementById('taskListContainer').classList.add('d-none');
+            hideNetworkError('taskListContainer');
 
             try {
                 tasks = (await apiRequest('/api/tasks')) || [];
                 updateMetrics();
                 filterAndRenderTasks();
             } catch (err) {
+                showNetworkError('taskListContainer', 'loadTasks()', 'Could not load your tasks from the database.');
                 showToast('Failed to load tasks.', 'danger');
             } finally {
                 document.getElementById('taskSkeleton').classList.add('d-none');
-                document.getElementById('taskListContainer').classList.remove('d-none');
             }
         }
 
@@ -297,7 +299,7 @@
 
                 item.innerHTML = `
                     <div class="d-flex align-items-center gap-3 flex-grow-1">
-                        <div class="task-checkbox-custom" onclick="toggleTaskStatus('${task._id}', ${!task.done})" title="${task.done ? 'Mark pending' : 'Mark completed'}">
+                        <div class="task-checkbox-custom" onclick="toggleTaskStatus('${task._id}', ${!task.done}, this)" title="${task.done ? 'Mark pending' : 'Mark completed'}">
                             <i class="bi bi-check-lg"></i>
                         </div>
                         <div class="flex-grow-1">
@@ -308,10 +310,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-sm ${task.done ? 'btn-outline-secondary' : 'btn-outline-success'} rounded-3" onclick="toggleTaskStatus('${task._id}', ${!task.done})" title="${task.done ? 'Undo completion' : 'Complete task'}">
+                        <button class="btn btn-sm ${task.done ? 'btn-outline-secondary' : 'btn-outline-success'} rounded-3" onclick="toggleTaskStatus('${task._id}', ${!task.done}, this)" title="${task.done ? 'Undo completion' : 'Complete task'}">
                             <i class="bi ${task.done ? 'bi-arrow-counterclockwise' : 'bi-check2'}"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteTaskItem('${task._id}')" title="Delete Task">
+                        <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteTaskItem('${task._id}', this)" title="Delete Task">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -348,24 +350,28 @@
             }
         }
 
-        async function toggleTaskStatus(id, newStatus) {
+        async function toggleTaskStatus(id, newStatus, btnEl) {
+            if (btnEl) setBtnLoading(btnEl, true, '');
             try {
                 await apiRequest(`/api/tasks/${id}`, 'PUT', { done: newStatus });
                 showToast(newStatus ? 'Task marked complete! Great job 🎉' : 'Task marked as pending.', 'info');
                 await loadTasks();
             } catch (err) {
                 showToast('Failed to update task status.', 'danger');
+                if (btnEl) setBtnLoading(btnEl, false);
             }
         }
 
-        async function deleteTaskItem(id) {
+        async function deleteTaskItem(id, btnEl) {
             if (!confirm('Are you sure you want to remove this task?')) return;
+            if (btnEl) setBtnLoading(btnEl, true, '');
             try {
                 await apiRequest(`/api/tasks/${id}`, 'DELETE');
                 showToast('Task deleted.', 'info');
                 await loadTasks();
             } catch (err) {
                 showToast('Failed to delete task.', 'danger');
+                if (btnEl) setBtnLoading(btnEl, false);
             }
         }
 

@@ -42,7 +42,7 @@
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button type="submit" id="loginBtn" class="btn btn-primary w-100">Login</button>
                 </form>
                 <p class="text-center mt-3">Don't have an account? <a href="signup.html">Sign Up</a></p>
             </div>
@@ -60,12 +60,15 @@
     <script>
         document.getElementById("loginForm").addEventListener("submit", async function(e) {
             e.preventDefault();
+            var btn = document.getElementById("loginBtn");
             var email = document.getElementById("email").value.trim();
             var password = document.getElementById("password").value;
             var errorDiv = document.getElementById("loginError");
 
             errorDiv.classList.add("d-none");
             errorDiv.textContent = "";
+
+            setBtnLoading(btn, true, "Signing in...");
 
             try {
                 var res = await apiRequest("/api/auth/login", "POST", {
@@ -82,6 +85,7 @@
             } catch (err) {
                 errorDiv.textContent = err.message || "Invalid email or password!";
                 errorDiv.classList.remove("d-none");
+                setBtnLoading(btn, false);
             }
         });
     </script>

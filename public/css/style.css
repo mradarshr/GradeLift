@@ -1075,3 +1075,10 @@ footer {
     50% { transform: scale(1.05); opacity: 0.85; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+.network-error-card {
+    border-color: #fecaca !important;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);
+}
+

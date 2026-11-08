@@ -138,3 +138,33 @@ function setBtnLoading(btn, isLoading, loadingText) {
         }
     }
 }
+
+function showNetworkError(containerId, retryFnName, message) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var errEl = document.getElementById(containerId + "_errorOverlay");
+    if (!errEl) {
+        errEl = document.createElement("div");
+        errEl.id = containerId + "_errorOverlay";
+        errEl.className = "network-error-card p-4 p-md-5 text-center rounded-4 border bg-white shadow-sm my-3";
+    }
+    errEl.innerHTML = '<i class="bi bi-wifi-off display-4 text-danger mb-3 d-inline-block"></i>' +
+        '<h5 class="fw-bold text-dark">Data Loading Failed</h5>' +
+        '<p class="text-muted small mx-auto mb-4" style="max-width: 420px;">' + (message || "Network Error: Could not connect to the database. Please check your connection and try again.") + '</p>' +
+        '<button class="btn btn-primary rounded-pill px-4 fw-bold" onclick="' + (retryFnName || "location.reload()") + '">' +
+        '<i class="bi bi-arrow-clockwise me-1"></i> Retry Loading' +
+        '</button>';
+    container.parentNode.insertBefore(errEl, container);
+    container.classList.add("d-none");
+}
+
+function hideNetworkError(containerId) {
+    var errEl = document.getElementById(containerId + "_errorOverlay");
+    if (errEl && errEl.parentNode) {
+        errEl.parentNode.removeChild(errEl);
+    }
+    var container = document.getElementById(containerId);
+    if (container) {
+        container.classList.remove("d-none");
+    }
+}

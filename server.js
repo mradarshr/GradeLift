@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
+const subjectRoutes = require("./routes/subjects");
 const taskRoutes = require("./routes/tasks");
 const timetableRoutes = require("./routes/timetable");
 const noteRoutes = require("./routes/notes");
@@ -48,6 +49,7 @@ apiRouter.use(async (req, res, next) => {
 });
 
 apiRouter.use("/auth", authRoutes);
+apiRouter.use("/subjects", subjectRoutes);
 apiRouter.use("/tasks", taskRoutes);
 apiRouter.use("/timetable", timetableRoutes);
 apiRouter.use("/notes", noteRoutes);
@@ -57,7 +59,7 @@ apiRouter.use("/quiz", quizRoutes);
 
 app.use("/api", apiRouter);
 
-const pages = ["login", "signup", "dashboard", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown", "quiz"];
+const pages = ["login", "signup", "dashboard", "subjects", "timetable", "tasks", "pomodoro", "progress", "notes", "exam-countdown", "quiz"];
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));

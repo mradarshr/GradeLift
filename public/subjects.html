@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Subjects - GradeLift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="mobile-header d-lg-none">
+        <button class="btn btn-link text-dark p-0 me-3" onclick="toggleSidebar()"><i class="bi bi-list fs-2"></i></button>
+        <span class="fw-bold fs-5 text-primary"><i class="bi bi-rocket-takeoff"></i> GradeLift</span>
+    </div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="sidebar-brand p-0 mb-0">
+                    <i class="bi bi-rocket-takeoff"></i> GradeLift
+                </div>
+                <button type="button" class="btn-close d-lg-none" onclick="toggleSidebar()"></button>
+            </div>
+            <nav class="sidebar-nav flex-grow-1">
+                <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="subjects.html" class="active"><i class="bi bi-book"></i> Subjects</a>
+                <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
+                <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
+                <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
+                <a href="quiz.html"><i class="bi bi-robot"></i> AI Quiz</a>
+                <a href="progress.html"><i class="bi bi-bar-chart-line"></i> Progress</a>
+                <a href="notes.html"><i class="bi bi-journal-text"></i> Notes</a>
+                <a href="exam-countdown.html"><i class="bi bi-hourglass-split"></i> Exams</a>
+            </nav>
+            <div class="sidebar-nav mt-auto">
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content flex-grow-1">
+            <div class="top-bar">
+                <div class="mb-2 mb-md-0">
+                    <h4 class="fw-bold mb-0">Course Subjects</h4>
+                    <small class="text-muted">Define your semester curriculum, study goals, instructors, and target grades</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-primary rounded-3 fw-bold" onclick="openAddSubjectModal()">
+                        <i class="bi bi-plus-lg me-1"></i> Add Subject
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Enrolled Subjects</p>
+                                <h3 class="fw-bold mb-0" id="statSubjectCount">0</h3>
+                            </div>
+                            <i class="bi bi-book-half" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Weekly Goal</p>
+                                <h3 class="fw-bold mb-0" id="statTotalGoalHours">0h</h3>
+                            </div>
+                            <i class="bi bi-bullseye" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Logged Hours</p>
+                                <h3 class="fw-bold mb-0" id="statTotalLoggedHours">0h</h3>
+                            </div>
+                            <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Target A / A+</p>
+                                <h3 class="fw-bold mb-0" id="statTopTargets">0</h3>
+                            </div>
+                            <i class="bi bi-award-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="subjectsSkeleton" class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                    <div class="gl-skeleton gl-skeleton-card" style="height: 200px;"></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="gl-skeleton gl-skeleton-card" style="height: 200px;"></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="gl-skeleton gl-skeleton-card" style="height: 200px;"></div>
+                </div>
+            </div>
+
+            <div id="subjectsGrid" class="row g-3 d-none"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="subjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark" id="subjectModalTitle">Add Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="subjectForm" onsubmit="saveSubject(event)">
+                    <input type="hidden" id="subjectEditId" value="">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Subject / Course Name</label>
+                            <input type="text" class="form-control rounded-3" id="subjectNameInput" placeholder="e.g. Data Structures & Algorithms, Macroeconomics" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted">Course Code (Optional)</label>
+                                <input type="text" class="form-control rounded-3" id="subjectCodeInput" placeholder="e.g. CS201">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted">Target Grade</label>
+                                <select class="form-select rounded-3" id="subjectTargetGrade">
+                                    <option value="A+" selected>A+ (Distinction)</option>
+                                    <option value="A">A (Excellent)</option>
+                                    <option value="B+">B+ (Very Good)</option>
+                                    <option value="B">B (Good)</option>
+                                    <option value="Pass">Pass</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted">Weekly Goal (Hours)</label>
+                                <input type="number" class="form-control rounded-3" id="subjectGoalInput" min="1" max="50" value="5" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted">Card Accent Color</label>
+                                <input type="color" class="form-control form-control-color w-100 rounded-3" id="subjectColorInput" value="#7c3aed" title="Choose subject color">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Instructor / Professor (Optional)</label>
+                            <input type="text" class="form-control rounded-3" id="subjectInstructorInput" placeholder="e.g. Prof. Anderson">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveSubjectBtn" class="btn btn-primary rounded-3 fw-bold px-4">
+                            <i class="bi bi-check2 me-1"></i> Save Subject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logHoursModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark">Log Study Hours</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="logHoursForm" onsubmit="submitLogHours(event)">
+                    <input type="hidden" id="logSubjectId" value="">
+                    <div class="modal-body p-3">
+                        <p class="text-muted small mb-2" id="logSubjectNameText">Subject</p>
+                        <label class="form-label fw-bold small text-muted">Hours to Add</label>
+                        <input type="number" class="form-control rounded-3 fs-5 text-center fw-bold" id="logHoursInput" min="0.5" step="0.5" value="1" required>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="submitLogHoursBtn" class="btn btn-success rounded-3 fw-bold">
+                            <i class="bi bi-check2 me-1"></i> Log Hours
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let subjects = [];
+        let subjectModalInstance = null;
+        let logModalInstance = null;
+
+        async function init() {
+            await checkLogin();
+            loadSubjects();
+        }
+
+        async function loadSubjects() {
+            document.getElementById('subjectsSkeleton').classList.remove('d-none');
+            document.getElementById('subjectsGrid').classList.add('d-none');
+            hideNetworkError('subjectsGrid');
+
+            try {
+                subjects = (await apiRequest('/api/subjects')) || [];
+                updateStats();
+                renderSubjectCards();
+            } catch (err) {
+                showNetworkError('subjectsGrid', 'loadSubjects()', 'Could not load your subjects from the database.');
+                showToast('Failed to load subjects.', 'danger');
+            } finally {
+                document.getElementById('subjectsSkeleton').classList.add('d-none');
+            }
+        }
+
+        function updateStats() {
+            const count = subjects.length;
+            let totalGoal = 0;
+            let totalLogged = 0;
+            let topTargets = 0;
+
+            subjects.forEach(s => {
+                totalGoal += (Number(s.weeklyGoalHours) || 0);
+                totalLogged += (Number(s.loggedHours) || 0);
+                if (s.targetGrade === 'A' || s.targetGrade === 'A+') topTargets++;
+            });
+
+            document.getElementById('statSubjectCount').textContent = count;
+            document.getElementById('statTotalGoalHours').textContent = `${totalGoal}h`;
+            document.getElementById('statTotalLoggedHours').textContent = `${totalLogged}h`;
+            document.getElementById('statTopTargets').textContent = topTargets;
+        }
+
+        function renderSubjectCards() {
+            const container = document.getElementById('subjectsGrid');
+            container.innerHTML = '';
+            container.classList.remove('d-none');
+
+            if (subjects.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="p-5 text-center rounded-4 border bg-white shadow-sm">
+                            <i class="bi bi-journal-bookmark display-4 text-primary opacity-50 mb-3 d-inline-block"></i>
+                            <h5 class="fw-bold text-dark">No Subjects Enrolled Yet</h5>
+                            <p class="text-muted small mx-auto mb-4" style="max-width: 440px;">Map your courses for this semester. You can set weekly study targets, pick color accents, and log hours that directly sync to your progress analytics.</p>
+                            <button class="btn btn-primary rounded-pill px-4 fw-bold" onclick="openAddSubjectModal()">
+                                <i class="bi bi-plus-lg me-1"></i> Add Your First Subject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            subjects.forEach(sub => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+
+                const color = sub.color || '#7c3aed';
+                const goal = Number(sub.weeklyGoalHours) || 5;
+                const logged = Number(sub.loggedHours) || 0;
+                const pct = Math.min(100, Math.round((logged / goal) * 100));
+
+                col.innerHTML = `
+                    <div class="card h-100 border rounded-4 shadow-sm p-4 bg-white d-flex flex-column transition-all" style="border-left: 6px solid ${color} !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge rounded-pill" style="background: ${color}18; color: ${color}; font-weight: 700;">
+                                    ${sub.code ? escapeHtml(sub.code) : 'Course'}
+                                </span>
+                            </div>
+                            <span class="badge bg-light text-dark fw-bold border">
+                                Target: ${escapeHtml(sub.targetGrade || 'A')}
+                            </span>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-1 lh-sm">${escapeHtml(sub.name)}</h5>
+                        ${sub.instructor ? `<small class="text-muted mb-3"><i class="bi bi-person me-1"></i>${escapeHtml(sub.instructor)}</small>` : '<small class="text-muted mb-3">Self-study / Lecture</small>'}
+
+                        <div class="p-3 rounded-3 bg-light my-3 mt-auto">
+                            <div class="d-flex justify-content-between align-items-center small mb-1">
+                                <span class="text-muted">Weekly Study Goal</span>
+                                <span class="fw-bold text-dark">${logged}h / ${goal}h</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar rounded-pill" role="progressbar" style="width: ${pct}%; background-color: ${color};"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <button class="btn btn-sm btn-outline-success rounded-3 fw-bold" onclick="openLogHoursModal('${sub._id}', '${escapeHtml(sub.name)}')">
+                                <i class="bi bi-plus-circle me-1"></i> Log Hours
+                            </button>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-secondary rounded-3" onclick="openEditSubjectModal('${sub._id}')" title="Edit Subject">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteSubjectItem('${sub._id}', this)" title="Delete Subject">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function openAddSubjectModal() {
+            document.getElementById('subjectEditId').value = '';
+            document.getElementById('subjectForm').reset();
+            document.getElementById('subjectModalTitle').textContent = 'Add Course Subject';
+            document.getElementById('subjectColorInput').value = '#7c3aed';
+            if (!subjectModalInstance) {
+                subjectModalInstance = new bootstrap.Modal(document.getElementById('subjectModal'));
+            }
+            subjectModalInstance.show();
+        }
+
+        function openEditSubjectModal(id) {
+            const sub = subjects.find(s => s._id === id);
+            if (!sub) return;
+
+            document.getElementById('subjectEditId').value = sub._id;
+            document.getElementById('subjectNameInput').value = sub.name;
+            document.getElementById('subjectCodeInput').value = sub.code || '';
+            document.getElementById('subjectTargetGrade').value = sub.targetGrade || 'A';
+            document.getElementById('subjectGoalInput').value = sub.weeklyGoalHours || 5;
+            document.getElementById('subjectColorInput').value = sub.color || '#7c3aed';
+            document.getElementById('subjectInstructorInput').value = sub.instructor || '';
+            document.getElementById('subjectModalTitle').textContent = 'Edit Course Subject';
+
+            if (!subjectModalInstance) {
+                subjectModalInstance = new bootstrap.Modal(document.getElementById('subjectModal'));
+            }
+            subjectModalInstance.show();
+        }
+
+        async function saveSubject(e) {
+            e.preventDefault();
+            const btn = document.getElementById('saveSubjectBtn');
+            const editId = document.getElementById('subjectEditId').value;
+            const name = document.getElementById('subjectNameInput').value.trim();
+            const code = document.getElementById('subjectCodeInput').value.trim();
+            const targetGrade = document.getElementById('subjectTargetGrade').value;
+            const weeklyGoalHours = document.getElementById('subjectGoalInput').value;
+            const color = document.getElementById('subjectColorInput').value;
+            const instructor = document.getElementById('subjectInstructorInput').value.trim();
+
+            if (!name) return;
+
+            setBtnLoading(btn, true, 'Saving Subject...');
+
+            try {
+                if (editId) {
+                    await apiRequest(`/api/subjects/${editId}`, 'PUT', {
+                        name, code, targetGrade, weeklyGoalHours, color, instructor
+                    });
+                    showToast('Subject updated successfully!', 'success');
+                } else {
+                    await apiRequest('/api/subjects', 'POST', {
+                        name, code, targetGrade, weeklyGoalHours, color, instructor
+                    });
+                    showToast('Subject added to curriculum!', 'success');
+                }
+
+                if (subjectModalInstance) subjectModalInstance.hide();
+                await loadSubjects();
+            } catch (err) {
+                showToast(err.message || 'Failed to save subject.', 'danger');
+            } finally {
+                setBtnLoading(btn, false);
+            }
+        }
+
+        function openLogHoursModal(id, name) {
+            document.getElementById('logSubjectId').value = id;
+            document.getElementById('logSubjectNameText').textContent = `Subject: ${name}`;
+            document.getElementById('logHoursInput').value = '1';
+            if (!logModalInstance) {
+                logModalInstance = new bootstrap.Modal(document.getElementById('logHoursModal'));
+            }
+            logModalInstance.show();
+        }
+
+        async function submitLogHours(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitLogHoursBtn');
+            const id = document.getElementById('logSubjectId').value;
+            const addHours = Number(document.getElementById('logHoursInput').value) || 0;
+
+            const sub = subjects.find(s => s._id === id);
+            if (!sub) return;
+
+            setBtnLoading(btn, true, 'Logging Hours...');
+
+            try {
+                const newLogged = (Number(sub.loggedHours) || 0) + addHours;
+                await apiRequest(`/api/subjects/${id}`, 'PUT', { loggedHours: newLogged });
+                showToast(`Logged ${addHours}h for ${sub.name}! Analytics updated.`, 'success');
+
+                if (logModalInstance) logModalInstance.hide();
+                await loadSubjects();
+            } catch (err) {
+                showToast(err.message || 'Failed to log study hours.', 'danger');
+            } finally {
+                setBtnLoading(btn, false);
+            }
+        }
+
+        async function deleteSubjectItem(id, btnEl) {
+            if (!confirm('Are you sure you want to delete this subject? It will also remove its logged hours from analytics.')) return;
+            if (btnEl) setBtnLoading(btnEl, true, '');
+            try {
+                await apiRequest(`/api/subjects/${id}`, 'DELETE');
+                showToast('Subject removed from your curriculum.', 'info');
+                await loadSubjects();
+            } catch (err) {
+                showToast('Failed to delete subject.', 'danger');
+                if (btnEl) setBtnLoading(btnEl, false);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

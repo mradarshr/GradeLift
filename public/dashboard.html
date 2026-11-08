@@ -28,6 +28,7 @@
             </div>
             <nav class="sidebar-nav flex-grow-1">
                 <a href="dashboard.html" class="active"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="subjects.html"><i class="bi bi-book"></i> Subjects</a>
                 <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
                 <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
                 <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
@@ -54,9 +55,18 @@
                 </div>
             </div>
 
-            <div id="onboardingBannerContainer"></div>
+            <div id="dashboardPreloader" class="row g-3 mb-4">
+                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
+                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
+                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
+                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
+                <div class="col-12"><div class="gl-skeleton" style="height: 240px; width: 100%; border-radius: 16px;"></div></div>
+            </div>
 
-            <div class="row g-3 mb-4">
+            <div id="dashboardContent" class="d-none">
+                <div id="onboardingBannerContainer"></div>
+
+                <div class="row g-3 mb-4">
                 <div class="col-md-3 col-6">
                     <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
                         <div class="d-flex justify-content-between align-items-center">
@@ -140,6 +150,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 
@@ -148,91 +159,124 @@
     <script src="js/app.js"></script>
     <script>
         async function initDashboard() {
-            await checkLogin();
-            document.getElementById("userName").textContent = getUser();
+            var preloader = document.getElementById("dashboardPreloader");
+            var content = document.getElementById("dashboardContent");
+            if (preloader) preloader.classList.remove("d-none");
+            if (content) content.classList.add("d-none");
+            hideNetworkError("dashboardContent");
 
-            var tasks = (await apiRequest("/api/tasks")) || [];
-            var timetable = (await apiRequest("/api/timetable")) || [];
-            var exams = (await apiRequest("/api/exams")) || [];
-            var progress = (await apiRequest("/api/progress")) || { tasksPerDay: { labels: [], data: [] }, hoursBySubject: { labels: [], data: [] } };
+            try {
+                await checkLogin();
+                document.getElementById("userName").textContent = getUser();
 
-            var total = tasks.length;
-            var completed = tasks.filter(function(t) { return t.done; }).length;
-            var pending = total - completed;
-            var totalHours = progress.hoursBySubject.data.reduce(function(a, b) { return a + b; }, 0);
-            var now = new Date();
-            var upcoming = exams.filter(function(e) { return new Date(e.date) > now; }).length;
+                var [tasks, timetable, exams, progress, subjects] = await Promise.all([
+                    apiRequest("/api/tasks"),
+                    apiRequest("/api/timetable"),
+                    apiRequest("/api/exams"),
+                    apiRequest("/api/progress"),
+                    apiRequest("/api/subjects").catch(function() { return []; })
+                ]);
 
-            var bannerEl = document.getElementById("onboardingBannerContainer");
-            if (total === 0 && timetable.length === 0 && exams.length === 0) {
-                bannerEl.innerHTML = '<div class="onboarding-banner mb-4">' +
-                    '<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">' +
-                    '<div>' +
-                    '<h3 class="fw-bold mb-1">Welcome to GradeLift! 🚀 Let\'s Start Your Journey</h3>' +
-                    '<p class="mb-0 text-white-50">Your personal academic dashboard is completely fresh. Follow these simple steps to supercharge your studies:</p>' +
-                    '</div>' +
-                    '<span class="badge bg-white text-primary fw-bold px-3 py-2 rounded-pill fs-6 mt-2 mt-md-0"><i class="bi bi-compass"></i> Onboarding Roadmap</span>' +
-                    '</div>' +
-                    '<div class="row g-3 mt-1">' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="timetable.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">1</span> Weekly Timetable</div>' +
-                    '<small class="text-white-50">Map your class schedules and lectures to never miss a session.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="tasks.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">2</span> Task Management</div>' +
-                    '<small class="text-white-50">Organize assignments, homework, and deadlines with priority tags.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="quiz.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">3</span> AI Quiz Generator</div>' +
-                    '<small class="text-white-50">Turn notes into practice MCQs and conceptual tests analyzed by AI.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="pomodoro.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">4</span> Focus Pomodoro</div>' +
-                    '<small class="text-white-50">Maintain deep study sessions with smooth circular countdown timer.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="notes.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">5</span> Smart Study Notes</div>' +
-                    '<small class="text-white-50">Store organized notes ready for quick revision and quiz synthesis.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '<div class="col-md-4 col-sm-6">' +
-                    '<a href="exam-countdown.html" class="journey-step">' +
-                    '<div class="fw-bold mb-1"><span class="journey-step-num">6</span> Exam Tracker</div>' +
-                    '<small class="text-white-50">Stay ahead of final exams, midterms, and project submissions.</small>' +
-                    '</a>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top border-white-50">' +
-                    '<a href="timetable.html" class="btn btn-light text-primary fw-bold px-4 py-2"><i class="bi bi-calendar-check me-2"></i> Start with Timetable</a>' +
-                    '<a href="tasks.html" class="btn btn-outline-light fw-bold px-4 py-2"><i class="bi bi-check2-square me-2"></i> Add Your First Task</a>' +
-                    '</div>' +
-                    '</div>';
-            } else {
-                bannerEl.innerHTML = '';
+                tasks = tasks || [];
+                timetable = timetable || [];
+                exams = exams || [];
+                progress = progress || { tasksPerDay: { labels: [], data: [] }, hoursBySubject: { labels: [], data: [] } };
+                subjects = subjects || [];
+
+                var total = tasks.length;
+                var completed = tasks.filter(function(t) { return t.done; }).length;
+                var pending = total - completed;
+                var totalHours = (progress.hoursBySubject && progress.hoursBySubject.data)
+                    ? progress.hoursBySubject.data.reduce(function(a, b) { return a + b; }, 0)
+                    : 0;
+                var now = new Date();
+                var upcoming = exams.filter(function(e) { return new Date(e.date) > now; }).length;
+
+                var bannerEl = document.getElementById("onboardingBannerContainer");
+                if (total === 0 && timetable.length === 0 && exams.length === 0 && subjects.length === 0) {
+                    bannerEl.innerHTML = '<div class="onboarding-banner mb-4">' +
+                        '<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">' +
+                        '<div>' +
+                        '<h3 class="fw-bold mb-1">Welcome to GradeLift! 🚀 Let\'s Start Your Journey</h3>' +
+                        '<p class="mb-0 text-white-50">Your academic dashboard is ready. Follow this recommended roadmap to setup your semester:</p>' +
+                        '</div>' +
+                        '<span class="badge bg-white text-primary fw-bold px-3 py-2 rounded-pill fs-6 mt-2 mt-md-0"><i class="bi bi-compass"></i> Step 1: Add Subjects</span>' +
+                        '</div>' +
+                        '<div class="row g-3 mt-1">' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="subjects.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">1</span> Course Subjects</div>' +
+                        '<small class="text-white-50">Map your enrolled courses, color codes, and target grades first.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="timetable.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">2</span> Weekly Timetable</div>' +
+                        '<small class="text-white-50">Organize class lecture blocks and labs to never miss a session.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="tasks.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">3</span> Task Management</div>' +
+                        '<small class="text-white-50">Track homework, problem sets, and assignment deadlines.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="quiz.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">4</span> AI Quiz Hub</div>' +
+                        '<small class="text-white-50">Turn lecture notes into practice quizzes with deep AI analysis.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="pomodoro.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">5</span> Focus Pomodoro</div>' +
+                        '<small class="text-white-50">Build deep study sessions with the smooth circular timer.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '<div class="col-md-4 col-sm-6">' +
+                        '<a href="exam-countdown.html" class="journey-step">' +
+                        '<div class="fw-bold mb-1"><span class="journey-step-num">6</span> Exam Tracker</div>' +
+                        '<small class="text-white-50">Stay prepared for midterms and final exams with live countdowns.</small>' +
+                        '</a>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="d-flex flex-wrap gap-2 mt-4 pt-2 border-top border-white-50">' +
+                        '<a href="subjects.html" class="btn btn-light text-primary fw-bold px-4 py-2"><i class="bi bi-book me-2"></i> Start with Subjects</a>' +
+                        '<a href="timetable.html" class="btn btn-outline-light fw-bold px-4 py-2"><i class="bi bi-calendar-check me-2"></i> Setup Timetable</a>' +
+                        '</div>' +
+                        '</div>';
+                } else {
+                    bannerEl.innerHTML = '';
+                }
+
+                document.getElementById("totalTasks").textContent = total;
+                document.getElementById("completedTasks").textContent = completed;
+                document.getElementById("studyHours").textContent = totalHours;
+                document.getElementById("upcomingExams").textContent = upcoming;
+
+                var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                document.getElementById("progressText").textContent = completed + " of " + total + " tasks completed";
+
+                renderUrgentTasks(tasks);
+                renderCharts(progress, completed, pending);
+                renderSchedule(timetable);
+                renderExams(exams);
+
+                if (preloader) preloader.classList.add("d-none");
+                if (content) content.classList.remove("d-none");
+            } catch (err) {
+                if (preloader) preloader.classList.add("d-none");
+                showNetworkError("dashboardContent", "initDashboard()", "Could not load dashboard data from database.");
             }
+        }
 
-            document.getElementById("totalTasks").textContent = total;
-            document.getElementById("completedTasks").textContent = completed;
-            document.getElementById("studyHours").textContent = totalHours;
-            document.getElementById("upcomingExams").textContent = upcoming;
-
-            var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-            document.getElementById("progressText").textContent = completed + " of " + total + " tasks completed";
-
+        function renderUrgentTasks(tasks) {
             var urgent = tasks.filter(function(t) { return !t.done; }).sort(function(a, b) {
                 return new Date(a.due) - new Date(b.due);
             }).slice(0, 4);
 
             var urgentContainer = document.getElementById("urgentTasks");
+            urgentContainer.innerHTML = "";
             if (urgent.length === 0) {
                 urgentContainer.innerHTML = '<div class="col-12"><div class="chart-card p-4 text-center text-muted">All tasks completed! Great job 🎉</div></div>';
             } else {
@@ -247,10 +291,10 @@
                     col.className = "col-md-6";
                     col.innerHTML = '<div class="task-card p-3">' +
                         '<p class="text-muted mb-1" style="font-size: 0.78rem;"><i class="bi bi-folder2"></i> GradeLift / Study</p>' +
-                        '<h6 class="fw-bold mb-2">' + task.name + '</h6>' +
+                        '<h6 class="fw-bold mb-2">' + escapeHtml(task.name) + '</h6>' +
                         '<div class="mb-2">' +
                         '<span class="tag tag-study">Studying</span>' +
-                        (isOverdue ? '<span class="tag tag-high">Overdue</span>' : '<span class="tag tag-exam">Upcoming</span>') +
+                        (isOverdue ? '<span class="tag tag-high pulse-badge">Overdue</span>' : '<span class="tag tag-exam">Upcoming</span>') +
                         '</div>' +
                         '<div class="d-flex justify-content-between align-items-center">' +
                         '<small class="text-muted"><i class="bi bi-clock"></i> ' + dueText + '</small>' +
@@ -260,7 +304,9 @@
                     urgentContainer.appendChild(col);
                 });
             }
+        }
 
+        function renderCharts(progress, completed, pending) {
             var doughnutCtx = document.getElementById("doughnutChart").getContext("2d");
             new Chart(doughnutCtx, {
                 type: "doughnut",
@@ -307,9 +353,7 @@
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -323,16 +367,19 @@
                     }
                 }
             });
+        }
 
+        function renderSchedule(timetable) {
             var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             var todayName = days[new Date().getDay()];
             var todaySlots = timetable.filter(function(s) {
                 return s.day === todayName;
             }).sort(function(a, b) {
-                return a.time.localeCompare(b.time);
+                return (a.time || "").localeCompare(b.time || "");
             });
 
             var scheduleList = document.getElementById("scheduleList");
+            scheduleList.innerHTML = "";
             if (todaySlots.length === 0) {
                 scheduleList.innerHTML = '<p class="text-muted text-center py-3 mb-0">No classes today 🎉</p>';
             } else {
@@ -340,13 +387,15 @@
                     var item = document.createElement("div");
                     item.className = "schedule-item";
                     item.innerHTML = '<div class="d-flex justify-content-between align-items-center">' +
-                        '<strong style="font-size: 0.9rem;">' + slot.subject + '</strong>' +
+                        '<strong style="font-size: 0.9rem;">' + escapeHtml(slot.subject) + '</strong>' +
                         '<small class="text-muted"><i class="bi bi-clock"></i> ' + slot.time + '</small>' +
                         '</div>';
                     scheduleList.appendChild(item);
                 });
             }
+        }
 
+        function renderExams(exams) {
             var upcomingExamsList = exams.filter(function(e) {
                 return new Date(e.date) > new Date();
             }).sort(function(a, b) {
@@ -354,6 +403,7 @@
             }).slice(0, 3);
 
             var examContainer = document.getElementById("examCountdown");
+            examContainer.innerHTML = "";
             if (upcomingExamsList.length === 0) {
                 examContainer.innerHTML = '<p class="text-muted text-center py-3 mb-0">No upcoming exams</p>';
             } else {
@@ -365,13 +415,23 @@
                     item.style.borderRadius = "8px";
                     item.style.background = "var(--bg-light)";
                     item.innerHTML = '<div>' +
-                        '<strong style="font-size: 0.88rem;">' + exam.name + '</strong>' +
+                        '<strong style="font-size: 0.88rem;">' + escapeHtml(exam.name) + '</strong>' +
                         '<br><small class="text-muted">' + exam.date + '</small>' +
                         '</div>' +
                         '<span class="badge rounded-pill exam-badge">' + daysLeft + ' days</span>';
                     examContainer.appendChild(item);
                 });
             }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
         }
 
         initDashboard();

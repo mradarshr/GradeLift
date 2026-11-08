@@ -28,6 +28,7 @@
             </div>
             <nav class="sidebar-nav flex-grow-1">
                 <a href="dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+                <a href="subjects.html"><i class="bi bi-book"></i> Subjects</a>
                 <a href="timetable.html"><i class="bi bi-calendar-week"></i> Timetable</a>
                 <a href="tasks.html"><i class="bi bi-check2-square"></i> Tasks</a>
                 <a href="pomodoro.html"><i class="bi bi-stopwatch"></i> Pomodoro</a>
@@ -175,16 +176,17 @@
         async function loadExams() {
             document.getElementById('examSkeleton').classList.remove('d-none');
             document.getElementById('examListContainer').classList.add('d-none');
+            hideNetworkError('examListContainer');
 
             try {
                 exams = (await apiRequest('/api/exams')) || [];
                 updateStats();
                 renderExamCards();
             } catch (err) {
+                showNetworkError('examListContainer', 'loadExams()', 'Could not load your exams from the database.');
                 showToast('Failed to load exams.', 'danger');
             } finally {
                 document.getElementById('examSkeleton').classList.add('d-none');
-                document.getElementById('examListContainer').classList.remove('d-none');
             }
         }
 
@@ -300,7 +302,7 @@
                             <a href="quiz.html" class="btn btn-sm btn-outline-primary rounded-3" title="Practice AI Quiz for this exam">
                                 <i class="bi bi-robot"></i> Practice
                             </a>
-                            <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteExamItem('${exam._id}')" title="Delete Exam">
+                            <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteExamItem('${exam._id}', this)" title="Delete Exam">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -385,14 +387,16 @@
             }
         }
 
-        async function deleteExamItem(id) {
+        async function deleteExamItem(id, btnEl) {
             if (!confirm('Are you sure you want to remove this exam countdown?')) return;
+            if (btnEl) setBtnLoading(btnEl, true, '');
             try {
                 await apiRequest(`/api/exams/${id}`, 'DELETE');
                 showToast('Exam removed.', 'info');
                 await loadExams();
             } catch (err) {
                 showToast('Failed to delete exam.', 'danger');
+                if (btnEl) setBtnLoading(btnEl, false);
             }
         }
 
