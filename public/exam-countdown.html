@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
@@ -42,137 +42,371 @@
         </div>
 
         <div class="main-content flex-grow-1">
-            <h4 class="fw-bold mb-4"><i class="bi bi-hourglass-split text-secondary"></i> Exam Countdown</h4>
-
-            <div class="chart-card p-3 p-md-4 mb-4">
-                <form id="examForm" class="row g-3">
-                    <div class="col-md-5">
-                        <input type="text" class="form-control" id="examName" placeholder="Exam name" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control" id="examDate" required>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-plus-lg"></i> Add Exam</button>
-                    </div>
-                </form>
+            <div class="top-bar">
+                <div class="mb-2 mb-md-0">
+                    <h4 class="fw-bold mb-0">Exam Countdown</h4>
+                    <small class="text-muted">Track deadlines, midterms, and finals with precision live countdowns</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-primary rounded-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addExamModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Exam Date
+                    </button>
+                </div>
             </div>
 
-            <div id="examList"></div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4 col-sm-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ef4444, #f87171);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Urgent Exams (&lt; 14d)</p>
+                                <h3 class="fw-bold mb-0" id="statUrgentExams">0</h3>
+                            </div>
+                            <i class="bi bi-bell-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Upcoming Total</p>
+                                <h3 class="fw-bold mb-0" id="statUpcomingTotal">0</h3>
+                            </div>
+                            <i class="bi bi-calendar-event" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-12">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Concluded Exams</p>
+                                <h3 class="fw-bold mb-0" id="statCompletedExams">0</h3>
+                            </div>
+                            <i class="bi bi-trophy-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div class="d-flex flex-wrap gap-2" id="examFilterTabs">
+                        <button class="day-pill-filter active" onclick="setExamFilter('all')">
+                            All Exams <span class="badge bg-white text-dark rounded-pill ms-1" id="filterCountAll">0</span>
+                        </button>
+                        <button class="day-pill-filter" onclick="setExamFilter('upcoming')">
+                            Upcoming <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountUpcoming">0</span>
+                        </button>
+                        <button class="day-pill-filter" onclick="setExamFilter('past')">
+                            Completed <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountPast">0</span>
+                        </button>
+                    </div>
+
+                    <a href="quiz.html" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <i class="bi bi-robot me-1"></i> Practice with AI Quiz
+                    </a>
+                </div>
+
+                <div id="examSkeleton" class="d-flex flex-column gap-3">
+                    <div class="gl-skeleton gl-skeleton-card"></div>
+                    <div class="gl-skeleton gl-skeleton-card"></div>
+                </div>
+
+                <div id="examListContainer" class="d-flex flex-column gap-3 d-none"></div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="modal fade" id="addExamModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-calendar-plus text-primary me-2"></i>Schedule Exam</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="addExamForm" onsubmit="createExam(event)">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Exam Name / Subject</label>
+                            <input type="text" class="form-control rounded-3" id="examNameInput" placeholder="e.g. Calculus Midterm II, Biochemistry Final" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Exam Date</label>
+                            <input type="date" class="form-control rounded-3" id="examDateInput" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="submitExamBtn" class="btn btn-primary rounded-3 fw-bold px-4">
+                            <i class="bi bi-check2 me-1"></i> Save Exam
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
     <script>
-        var exams = [];
+        let exams = [];
+        let currentFilter = 'all';
+        let tickerInterval = null;
 
         async function init() {
             await checkLogin();
-            exams = (await apiRequest("/api/exams")) || [];
-            renderExams();
-            setInterval(renderExams, 1000);
+            setDefaultExamDate();
+            loadExams();
+            if (tickerInterval) clearInterval(tickerInterval);
+            tickerInterval = setInterval(updateAllTickers, 1000);
         }
 
-        function renderExams() {
-            var examList = document.getElementById('examList');
-            examList.innerHTML = '';
-            var now = new Date().getTime();
-
-            for (var i = 0; i < exams.length; i++) {
-                var exam = exams[i];
-                var examDateStr = exam.date + (exam.date.length === 10 ? 'T00:00:00' : '');
-                var targetDate = new Date(examDateStr);
-                if (isNaN(targetDate.getTime())) {
-                    targetDate = new Date(exam.date);
-                }
-                var diff = targetDate.getTime() - now;
-
-                var card = document.createElement('div');
-                if (diff <= 0) {
-                    card.className = 'card countdown-card exam-over shadow-sm mb-3';
-                } else {
-                    card.className = 'card countdown-card shadow-sm mb-3';
-                }
-
-                var cardBody = document.createElement('div');
-                cardBody.className = 'card-body d-flex justify-content-between align-items-center';
-
-                var left = document.createElement('div');
-                var h5 = document.createElement('h5');
-                h5.className = 'mb-1';
-                h5.textContent = exam.name;
-
-                var p = document.createElement('p');
-                p.className = 'text-muted mb-0';
-                p.textContent = exam.date;
-
-                left.appendChild(h5);
-                left.appendChild(p);
-
-                var right = document.createElement('div');
-                right.className = 'd-flex align-items-center gap-3';
-
-                if (diff <= 0) {
-                    var badge = document.createElement('span');
-                    badge.className = 'badge bg-danger fs-6';
-                    badge.textContent = 'Exam Over';
-                    right.appendChild(badge);
-                } else {
-                    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                    var countdownSpan = document.createElement('span');
-                    countdownSpan.className = 'fw-bold text-secondary';
-                    countdownSpan.textContent = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's';
-                    right.appendChild(countdownSpan);
-                }
-
-                var deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-outline-danger btn-sm';
-                deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
-                deleteBtn.setAttribute('onclick', 'deleteExam(\'' + exam._id + '\')');
-
-                right.appendChild(deleteBtn);
-
-                cardBody.appendChild(left);
-                cardBody.appendChild(right);
-                card.appendChild(cardBody);
-                examList.appendChild(card);
+        function setDefaultExamDate() {
+            const dateInput = document.getElementById('examDateInput');
+            if (dateInput) {
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 14);
+                dateInput.value = nextWeek.toISOString().split('T')[0];
             }
         }
 
-        async function deleteExam(id) {
+        async function loadExams() {
+            document.getElementById('examSkeleton').classList.remove('d-none');
+            document.getElementById('examListContainer').classList.add('d-none');
+
             try {
-                await apiRequest("/api/exams/" + id, "DELETE");
-                exams = (await apiRequest("/api/exams")) || [];
-                renderExams();
+                exams = (await apiRequest('/api/exams')) || [];
+                updateStats();
+                renderExamCards();
             } catch (err) {
-                alert(err.message || "Failed to delete exam.");
+                showToast('Failed to load exams.', 'danger');
+            } finally {
+                document.getElementById('examSkeleton').classList.add('d-none');
+                document.getElementById('examListContainer').classList.remove('d-none');
             }
         }
 
-        document.getElementById('examForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var name = document.getElementById('examName').value.trim();
-            var date = document.getElementById('examDate').value;
-            if (!name || !date) {
+        function updateStats() {
+            const now = new Date().getTime();
+            let urgent = 0;
+            let upcoming = 0;
+            let completed = 0;
+
+            exams.forEach(e => {
+                const target = getExamTime(e.date);
+                const diff = target - now;
+                if (diff <= 0) {
+                    completed++;
+                } else {
+                    upcoming++;
+                    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    if (daysLeft <= 14) urgent++;
+                }
+            });
+
+            document.getElementById('statUrgentExams').textContent = urgent;
+            document.getElementById('statUpcomingTotal').textContent = upcoming;
+            document.getElementById('statCompletedExams').textContent = completed;
+
+            document.getElementById('filterCountAll').textContent = exams.length;
+            document.getElementById('filterCountUpcoming').textContent = upcoming;
+            document.getElementById('filterCountPast').textContent = completed;
+        }
+
+        function setExamFilter(filterName) {
+            currentFilter = filterName;
+            const buttons = document.querySelectorAll('#examFilterTabs .day-pill-filter');
+            buttons.forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderExamCards();
+        }
+
+        function getExamTime(dateStr) {
+            if (!dateStr) return 0;
+            const isoStr = dateStr + (dateStr.length === 10 ? 'T09:00:00' : '');
+            let d = new Date(isoStr);
+            if (isNaN(d.getTime())) d = new Date(dateStr);
+            return d.getTime();
+        }
+
+        function renderExamCards() {
+            const container = document.getElementById('examListContainer');
+            container.innerHTML = '';
+            const now = new Date().getTime();
+
+            let filtered = exams.slice();
+            if (currentFilter === 'upcoming') {
+                filtered = filtered.filter(e => getExamTime(e.date) > now);
+            } else if (currentFilter === 'past') {
+                filtered = filtered.filter(e => getExamTime(e.date) <= now);
+            }
+
+            filtered.sort((a, b) => getExamTime(a.date) - getExamTime(b.date));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="p-5 text-center rounded-4 border bg-light">
+                        <i class="bi bi-calendar-check display-4 text-primary opacity-50 mb-3 d-inline-block"></i>
+                        <h5 class="fw-bold text-dark">No Exams in this Category</h5>
+                        <p class="text-muted small mx-auto mb-3" style="max-width: 440px;">Stay prepared and prevent surprises by adding all your test and midterm dates in advance.</p>
+                        <button class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#addExamModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Exam Date
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
-            try {
-                await apiRequest("/api/exams", "POST", { name: name, date: date });
-                exams = (await apiRequest("/api/exams")) || [];
-                renderExams();
-                document.getElementById('examForm').reset();
-            } catch (err) {
-                alert(err.message || "Failed to add exam.");
-            }
-        });
+            filtered.forEach(exam => {
+                const targetTime = getExamTime(exam.date);
+                const diff = targetTime - now;
+                const isOver = diff <= 0;
+                const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                const isUrgent = !isOver && daysLeft <= 7;
 
-        init();
+                let urgencyBadge = '';
+                if (isOver) {
+                    urgencyBadge = '<span class="badge bg-success-subtle text-success small px-2 py-1"><i class="bi bi-check-all me-1"></i>Concluded</span>';
+                } else if (isUrgent) {
+                    urgencyBadge = '<span class="badge bg-danger text-white small px-2 py-1 pulse-badge"><i class="bi bi-fire me-1"></i>Urgent: &lt; 7 Days</span>';
+                } else if (daysLeft <= 14) {
+                    urgencyBadge = '<span class="badge bg-warning-subtle text-warning small px-2 py-1"><i class="bi bi-clock-history me-1"></i>Coming Up Soon</span>';
+                } else {
+                    urgencyBadge = '<span class="badge bg-light text-secondary small px-2 py-1"><i class="bi bi-calendar-event me-1"></i>Scheduled</span>';
+                }
+
+                const card = document.createElement('div');
+                card.className = `exam-card-modern ${isUrgent ? 'exam-urgent' : ''}`;
+                card.dataset.targetTime = targetTime;
+
+                card.innerHTML = `
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                ${urgencyBadge}
+                                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${exam.date}</small>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">${escapeHtml(exam.name)}</h5>
+                            <small class="text-muted">Target Exam Milestone</small>
+                        </div>
+
+                        <div class="ticker-grid" id="ticker-${exam._id}">
+                            ${getTickerHtml(diff)}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="quiz.html" class="btn btn-sm btn-outline-primary rounded-3" title="Practice AI Quiz for this exam">
+                                <i class="bi bi-robot"></i> Practice
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteExamItem('${exam._id}')" title="Delete Exam">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getTickerHtml(diff) {
+            if (diff <= 0) {
+                return `
+                    <div class="ticker-box" style="min-width: 140px; background: #ecfdf5; border-color: #a7f3d0;">
+                        <span class="ticker-num text-success" style="font-size: 1.1rem;"><i class="bi bi-check-circle me-1"></i>Completed</span>
+                        <span class="ticker-lbl text-success">Finished</span>
+                    </div>
+                `;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            return `
+                <div class="ticker-box">
+                    <span class="ticker-num">${days}</span>
+                    <span class="ticker-lbl">Days</span>
+                </div>
+                <div class="ticker-box">
+                    <span class="ticker-num">${String(hours).padStart(2, '0')}</span>
+                    <span class="ticker-lbl">Hours</span>
+                </div>
+                <div class="ticker-box">
+                    <span class="ticker-num">${String(mins).padStart(2, '0')}</span>
+                    <span class="ticker-lbl">Mins</span>
+                </div>
+                <div class="ticker-box">
+                    <span class="ticker-num text-primary">${String(secs).padStart(2, '0')}</span>
+                    <span class="ticker-lbl">Secs</span>
+                </div>
+            `;
+        }
+
+        function updateAllTickers() {
+            const now = new Date().getTime();
+            exams.forEach(exam => {
+                const el = document.getElementById(`ticker-${exam._id}`);
+                if (el) {
+                    const target = getExamTime(exam.date);
+                    const diff = target - now;
+                    el.innerHTML = getTickerHtml(diff);
+                }
+            });
+        }
+
+        async function createExam(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitExamBtn');
+            const name = document.getElementById('examNameInput').value.trim();
+            const date = document.getElementById('examDateInput').value;
+
+            if (!name || !date) return;
+
+            setBtnLoading(btn, true, 'Scheduling Exam...');
+
+            try {
+                await apiRequest('/api/exams', 'POST', { name, date });
+                showToast('Exam scheduled successfully!', 'success');
+                document.getElementById('addExamForm').reset();
+                setDefaultExamDate();
+
+                const modalEl = document.getElementById('addExamModal');
+                const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+                m.hide();
+
+                await loadExams();
+            } catch (err) {
+                showToast(err.message || 'Failed to add exam.', 'danger');
+            } finally {
+                setBtnLoading(btn, false);
+            }
+        }
+
+        async function deleteExamItem(id) {
+            if (!confirm('Are you sure you want to remove this exam countdown?')) return;
+            try {
+                await apiRequest(`/api/exams/${id}`, 'DELETE');
+                showToast('Exam removed.', 'info');
+                await loadExams();
+            } catch (err) {
+                showToast('Failed to delete exam.', 'danger');
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

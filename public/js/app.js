@@ -88,3 +88,53 @@ function toggleSidebar() {
         overlay.classList.toggle("show");
     }
 }
+
+function showToast(message, type) {
+    type = type || "success";
+    var container = document.getElementById("glToastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "glToastContainer";
+        container.className = "toast-container-custom";
+        document.body.appendChild(container);
+    }
+
+    var icon = "bi-check-circle-fill text-success";
+    if (type === "danger") icon = "bi-exclamation-circle-fill text-danger";
+    else if (type === "info") icon = "bi-info-circle-fill text-info";
+    else if (type === "warning") icon = "bi-exclamation-triangle-fill text-warning";
+
+    var toast = document.createElement("div");
+    toast.className = "gl-toast toast-" + type;
+    toast.innerHTML = '<i class="bi ' + icon + ' fs-5"></i><span>' + message + '</span>';
+    container.appendChild(toast);
+
+    setTimeout(function() {
+        toast.classList.add("show");
+    }, 10);
+
+    setTimeout(function() {
+        toast.classList.remove("show");
+        setTimeout(function() {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 400);
+    }, 3200);
+}
+
+function setBtnLoading(btn, isLoading, loadingText) {
+    if (!btn) return;
+    if (isLoading) {
+        btn.dataset.originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.classList.add("btn-loading");
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + (loadingText || "Processing...");
+    } else {
+        btn.disabled = false;
+        btn.classList.remove("btn-loading");
+        if (btn.dataset.originalHtml) {
+            btn.innerHTML = btn.dataset.originalHtml;
+        }
+    }
+}
