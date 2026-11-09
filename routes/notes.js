@@ -16,13 +16,14 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const { title, content, date } = req.body;
+        const { title, content, date, subject } = req.body;
         if (!title) {
             return res.status(400).json({ error: "Title is required." });
         }
         const note = new Note({
             userId: req.userId,
             title: title.trim(),
+            subject: (subject || "").trim(),
             content: content || "",
             date: date || new Date().toISOString().split("T")[0]
         });
@@ -35,9 +36,10 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
     try {
-        const { title, content, date } = req.body;
+        const { title, content, date, subject } = req.body;
         const updates = {};
         if (title !== undefined) updates.title = title.trim();
+        if (subject !== undefined) updates.subject = subject.trim();
         if (content !== undefined) updates.content = content;
         if (date !== undefined) updates.date = date;
 

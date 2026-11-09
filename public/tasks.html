@@ -61,7 +61,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Tasks</p>
-                                <h3 class="fw-bold mb-0" id="statTotalTasks">0</h3>
+                                <h3 class="fw-bold mb-0" id="statTotalTasks"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-list-check" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -72,7 +72,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Pending Tasks</p>
-                                <h3 class="fw-bold mb-0" id="statPendingTasks">0</h3>
+                                <h3 class="fw-bold mb-0" id="statPendingTasks"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-hourglass-top" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +83,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Completed</p>
-                                <h3 class="fw-bold mb-0" id="statCompletedTasks">0</h3>
+                                <h3 class="fw-bold mb-0" id="statCompletedTasks"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-check2-circle" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -94,7 +94,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Completion Rate</p>
-                                <h3 class="fw-bold mb-0" id="statRate">0%</h3>
+                                <h3 class="fw-bold mb-0" id="statRate"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-pie-chart" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -106,16 +106,16 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                     <div class="d-flex flex-wrap gap-2" id="taskFilters">
                         <button class="task-filter-pill active" onclick="setTaskFilter('all')">
-                            All Tasks <span class="badge bg-white text-dark rounded-pill ms-1" id="filterCountAll">0</span>
+                            All Tasks <span class="badge bg-white text-dark rounded-pill ms-1" id="filterCountAll"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                         <button class="task-filter-pill" onclick="setTaskFilter('pending')">
-                            Pending <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountPending">0</span>
+                            Pending <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountPending"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                         <button class="task-filter-pill" onclick="setTaskFilter('today')">
-                            Due Today <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountToday">0</span>
+                            Due Today <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountToday"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                         <button class="task-filter-pill" onclick="setTaskFilter('completed')">
-                            Completed <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountCompleted">0</span>
+                            Completed <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountCompleted"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                     </div>
 
@@ -152,6 +152,16 @@
                 <form id="modalTaskForm" onsubmit="createTask(event)">
                     <div class="modal-body p-4">
                         <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Related Subject</label>
+                            <select class="form-select rounded-3" id="modalTaskSubjectSelect" onchange="onTaskSubjectSelectChange()">
+                                <option value="">General / No Specific Subject</option>
+                                <option value="__other__">Other (Enter manually)...</option>
+                            </select>
+                            <div id="modalTaskCustomSubjectWrap" class="mt-2 d-none">
+                                <input type="text" class="form-control rounded-3" id="modalTaskCustomSubject" placeholder="Enter custom subject name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Task Description</label>
                             <input type="text" class="form-control rounded-3" id="modalTaskName" placeholder="e.g. Complete Organic Chemistry Assignment #3" required>
                         </div>
@@ -175,6 +185,7 @@
     <script src="js/app.js"></script>
     <script>
         let tasks = [];
+        let userSubjects = [];
         let currentFilter = 'all';
 
         async function init() {
@@ -190,12 +201,26 @@
         }
 
         async function loadTasks() {
+            setCountLoading('statTotalTasks', false);
+            setCountLoading('statPendingTasks', false);
+            setCountLoading('statCompletedTasks', false);
+            setCountLoading('statRate', false);
+            setCountLoading('filterCountAll', true, true);
+            setCountLoading('filterCountPending', true, true);
+            setCountLoading('filterCountToday', true, true);
+            setCountLoading('filterCountCompleted', true, true);
             document.getElementById('taskSkeleton').classList.remove('d-none');
             document.getElementById('taskListContainer').classList.add('d-none');
             hideNetworkError('taskListContainer');
 
             try {
-                tasks = (await apiRequest('/api/tasks')) || [];
+                const [tasksRes, subsRes] = await Promise.all([
+                    apiRequest('/api/tasks'),
+                    apiRequest('/api/subjects').catch(function() { return []; })
+                ]);
+                tasks = tasksRes || [];
+                userSubjects = subsRes || [];
+                populateTaskSubjectSelect();
                 updateMetrics();
                 filterAndRenderTasks();
             } catch (err) {
@@ -203,6 +228,36 @@
                 showToast('Failed to load tasks.', 'danger');
             } finally {
                 document.getElementById('taskSkeleton').classList.add('d-none');
+            }
+        }
+
+        function populateTaskSubjectSelect() {
+            const select = document.getElementById('modalTaskSubjectSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">General / No Specific Subject</option>';
+
+            userSubjects.forEach(function(s) {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name + (s.code ? ' (' + s.code + ')' : '');
+                select.appendChild(opt);
+            });
+
+            const otherOpt = document.createElement('option');
+            otherOpt.value = '__other__';
+            otherOpt.textContent = 'Other (Enter manually)...';
+            select.appendChild(otherOpt);
+        }
+
+        function onTaskSubjectSelectChange() {
+            const select = document.getElementById('modalTaskSubjectSelect');
+            const wrap = document.getElementById('modalTaskCustomSubjectWrap');
+            const input = document.getElementById('modalTaskCustomSubject');
+            if (select.value === '__other__') {
+                wrap.classList.remove('d-none');
+                input.focus();
+            } else {
+                wrap.classList.add('d-none');
             }
         }
 
@@ -251,7 +306,7 @@
             }
 
             if (search) {
-                filtered = filtered.filter(t => (t.name || '').toLowerCase().includes(search));
+                filtered = filtered.filter(t => (t.name || '').toLowerCase().includes(search) || (t.subject || '').toLowerCase().includes(search));
             }
 
             filtered.sort((a, b) => {
@@ -297,6 +352,13 @@
                     dueBadge = `<span class="badge bg-light text-secondary small px-2 py-1"><i class="bi bi-calendar3 me-1"></i>In ${daysLeft}d (${task.due})</span>`;
                 }
 
+                let subjectBadge = '';
+                if (task.subject) {
+                    const matchedSub = userSubjects.find(s => (s.name || '').toLowerCase() === (task.subject || '').toLowerCase());
+                    const subColor = matchedSub && matchedSub.color ? matchedSub.color : '#7c3aed';
+                    subjectBadge = '<span class="badge rounded-pill small" style="background: ' + subColor + '18; color: ' + subColor + '; font-weight: 700;"><i class="bi bi-book me-1"></i>' + escapeHtml(task.subject) + '</span>';
+                }
+
                 item.innerHTML = `
                     <div class="d-flex align-items-center gap-3 flex-grow-1">
                         <div class="task-checkbox-custom" onclick="toggleTaskStatus('${task._id}', ${!task.done}, this)" title="${task.done ? 'Mark pending' : 'Mark completed'}">
@@ -304,7 +366,8 @@
                         </div>
                         <div class="flex-grow-1">
                             <div class="task-title-text">${escapeHtml(task.name)}</div>
-                            <div class="d-flex align-items-center gap-2 mt-1">
+                            <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                                ${subjectBadge}
                                 ${dueBadge}
                             </div>
                         </div>
@@ -327,15 +390,21 @@
             const btn = document.getElementById('submitTaskBtn');
             const name = document.getElementById('modalTaskName').value.trim();
             const due = document.getElementById('modalTaskDue').value;
+            const select = document.getElementById('modalTaskSubjectSelect');
+            let subject = select.value === '__other__'
+                ? document.getElementById('modalTaskCustomSubject').value.trim()
+                : select.value;
 
             if (!name || !due) return;
 
             setBtnLoading(btn, true, 'Creating Task...');
 
             try {
-                await apiRequest('/api/tasks', 'POST', { name, due });
+                await apiRequest('/api/tasks', 'POST', { name, due, subject });
                 showToast('Task added successfully!', 'success');
                 document.getElementById('modalTaskForm').reset();
+                populateTaskSubjectSelect();
+                setDefaultDueDate();
                 setDefaultDueDate();
 
                 const modalEl = document.getElementById('addTaskModal');

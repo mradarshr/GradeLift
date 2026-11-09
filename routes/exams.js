@@ -16,13 +16,14 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const { name, date } = req.body;
+        const { name, date, subject } = req.body;
         if (!name || !date) {
             return res.status(400).json({ error: "Exam name and date are required." });
         }
         const exam = new Exam({
             userId: req.userId,
             name: name.trim(),
+            subject: (subject || "").trim(),
             date
         });
         await exam.save();

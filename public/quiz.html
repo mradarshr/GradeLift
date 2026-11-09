@@ -65,7 +65,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Quizzes</p>
-                                    <h3 class="fw-bold mb-0" id="statTotalQuizzes">0</h3>
+                                    <h3 class="fw-bold mb-0" id="statTotalQuizzes"><span class="count-spinner"></span></h3>
                                 </div>
                                 <i class="bi bi-journal-bookmark" style="font-size: 1.8rem; opacity: 0.4;"></i>
                             </div>
@@ -76,7 +76,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Attempts</p>
-                                    <h3 class="fw-bold mb-0" id="statTotalAttempts">0</h3>
+                                    <h3 class="fw-bold mb-0" id="statTotalAttempts"><span class="count-spinner"></span></h3>
                                 </div>
                                 <i class="bi bi-arrow-repeat" style="font-size: 1.8rem; opacity: 0.4;"></i>
                             </div>
@@ -87,7 +87,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Best Score</p>
-                                    <h3 class="fw-bold mb-0" id="statBestScore">0%</h3>
+                                    <h3 class="fw-bold mb-0" id="statBestScore"><span class="count-spinner"></span></h3>
                                 </div>
                                 <i class="bi bi-trophy" style="font-size: 1.8rem; opacity: 0.4;"></i>
                             </div>
@@ -98,7 +98,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Average Mastery</p>
-                                    <h3 class="fw-bold mb-0" id="statAvgScore">0%</h3>
+                                    <h3 class="fw-bold mb-0" id="statAvgScore"><span class="count-spinner"></span></h3>
                                 </div>
                                 <i class="bi bi-graph-up" style="font-size: 1.8rem; opacity: 0.4;"></i>
                             </div>
@@ -434,6 +434,10 @@
         }
 
         async function loadAllQuizzes() {
+            setCountLoading('statTotalQuizzes', false);
+            setCountLoading('statTotalAttempts', false);
+            setCountLoading('statBestScore', false);
+            setCountLoading('statAvgScore', false);
             hideNetworkError('quizzesGrid');
             try {
                 const res = await fetch('/api/quiz');

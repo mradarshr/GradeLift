@@ -168,3 +168,16 @@ function hideNetworkError(containerId) {
         container.classList.remove("d-none");
     }
 }
+
+function renderCountSpinner(isDark, isSmall) {
+    var cls = isDark ? "count-spinner-dark" : "count-spinner";
+    if (isSmall) cls += " count-spinner-sm";
+    return '<span class="' + cls + '" role="status" aria-label="Loading count"></span>';
+}
+
+function setCountLoading(elementOrId, isDark, isSmall) {
+    var el = typeof elementOrId === "string" ? document.getElementById(elementOrId) : elementOrId;
+    if (el) {
+        el.innerHTML = renderCountSpinner(isDark, isSmall);
+    }
+}

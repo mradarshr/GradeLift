@@ -61,7 +61,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Study Sessions</p>
-                                <h3 class="fw-bold mb-0" id="statSessions">0</h3>
+                                <h3 class="fw-bold mb-0" id="statSessions"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-trophy" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -72,7 +72,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Logged Study Hours</p>
-                                <h3 class="fw-bold mb-0" id="statLoggedHours">0h</h3>
+                                <h3 class="fw-bold mb-0" id="statLoggedHours"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +83,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Tasks Finished</p>
-                                <h3 class="fw-bold mb-0" id="statTasksCount">0</h3>
+                                <h3 class="fw-bold mb-0" id="statTasksCount"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-check2-all" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -136,9 +136,12 @@
                     </div>
                     <div class="col-md-4" id="subjectPickerCol">
                         <label class="form-label fw-bold small text-muted">Select Subject</label>
-                        <select id="subjectSelectInput" class="form-select rounded-3">
+                        <select id="subjectSelectInput" class="form-select rounded-3" onchange="onSubjectSelectInputChange()">
                             <option value="">-- Choose enrolled subject --</option>
                         </select>
+                        <div id="customSubjectWrap" class="mt-2 d-none">
+                            <input type="text" class="form-control rounded-3" id="customSubjectInput" placeholder="Enter custom subject name">
+                        </div>
                     </div>
                     <div class="col-md-4 d-none" id="dayPickerCol">
                         <label class="form-label fw-bold small text-muted">Select Day</label>
@@ -181,6 +184,9 @@
         }
 
         async function loadProgress() {
+            setCountLoading('statSessions', false);
+            setCountLoading('statLoggedHours', false);
+            setCountLoading('statTasksCount', false);
             document.getElementById('progressSkeleton').classList.remove('d-none');
             document.getElementById('chartsContainer').classList.add('d-none');
             hideNetworkError('chartsContainer');
@@ -214,17 +220,31 @@
             const select = document.getElementById('subjectSelectInput');
             select.innerHTML = '<option value="">-- Choose enrolled subject --</option>';
 
-            if (userSubjects.length === 0) {
-                select.innerHTML = '<option value="">No subjects yet (Go to Subjects to add)</option>';
-                return;
+            if (userSubjects.length > 0) {
+                userSubjects.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = `${s.name}${s.code ? ' (' + s.code + ')' : ''}`;
+                    select.appendChild(opt);
+                });
             }
 
-            userSubjects.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.name;
-                opt.textContent = `${s.name}${s.code ? ' (' + s.code + ')' : ''}`;
-                select.appendChild(opt);
-            });
+            const otherOpt = document.createElement('option');
+            otherOpt.value = '__other__';
+            otherOpt.textContent = 'Other (Enter manually)...';
+            select.appendChild(otherOpt);
+        }
+
+        function onSubjectSelectInputChange() {
+            const val = document.getElementById('subjectSelectInput').value;
+            const wrap = document.getElementById('customSubjectWrap');
+            const inp = document.getElementById('customSubjectInput');
+            if (val === '__other__') {
+                wrap.classList.remove('d-none');
+                inp.focus();
+            } else {
+                wrap.classList.add('d-none');
+            }
         }
 
         function onMetricTargetChange() {
@@ -344,9 +364,14 @@
             if (chartType === 'Tasks Per Day') {
                 label = document.getElementById('daySelectInput').value;
             } else {
-                label = document.getElementById('subjectSelectInput').value;
+                const sel = document.getElementById('subjectSelectInput').value;
+                if (sel === '__other__') {
+                    label = document.getElementById('customSubjectInput').value.trim();
+                } else {
+                    label = sel;
+                }
                 if (!label) {
-                    showToast('Please select a subject from your enrolled list or add one in Subjects tab.', 'warning');
+                    showToast('Please select a subject or enter one manually.', 'warning');
                     return;
                 }
             }
@@ -372,6 +397,10 @@
                         await apiRequest(`/api/subjects/${found._id}`, 'PUT', { loggedHours: newLogged }).catch(() => {});
                     }
                 }
+
+                document.getElementById('customSubjectInput').value = '';
+                document.getElementById('customSubjectWrap').classList.add('d-none');
+                document.getElementById('subjectSelectInput').value = '';
 
                 showToast('Analytics updated successfully!', 'success');
                 updateMetrics();

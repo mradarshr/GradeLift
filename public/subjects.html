@@ -61,7 +61,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Enrolled Subjects</p>
-                                <h3 class="fw-bold mb-0" id="statSubjectCount">0</h3>
+                                <h3 class="fw-bold mb-0" id="statSubjectCount"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-book-half" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -72,7 +72,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Weekly Goal</p>
-                                <h3 class="fw-bold mb-0" id="statTotalGoalHours">0h</h3>
+                                <h3 class="fw-bold mb-0" id="statTotalGoalHours"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-bullseye" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +83,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Logged Hours</p>
-                                <h3 class="fw-bold mb-0" id="statTotalLoggedHours">0h</h3>
+                                <h3 class="fw-bold mb-0" id="statTotalLoggedHours"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -94,7 +94,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Target A / A+</p>
-                                <h3 class="fw-bold mb-0" id="statTopTargets">0</h3>
+                                <h3 class="fw-bold mb-0" id="statTopTargets"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-award-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -212,6 +212,10 @@
         }
 
         async function loadSubjects() {
+            setCountLoading('statSubjectCount', false);
+            setCountLoading('statTotalGoalHours', false);
+            setCountLoading('statTotalLoggedHours', false);
+            setCountLoading('statTopTargets', false);
             document.getElementById('subjectsSkeleton').classList.remove('d-none');
             document.getElementById('subjectsGrid').classList.add('d-none');
             hideNetworkError('subjectsGrid');

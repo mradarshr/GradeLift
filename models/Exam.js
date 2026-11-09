@@ -12,6 +12,11 @@ const examSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    subject: {
+        type: String,
+        trim: true,
+        default: ""
+    },
     date: {
         type: String,
         required: true

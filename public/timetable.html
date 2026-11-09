@@ -61,7 +61,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Weekly Slots</p>
-                                <h3 class="fw-bold mb-0" id="statWeeklySlots">0</h3>
+                                <h3 class="fw-bold mb-0" id="statWeeklySlots"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-calendar3" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -72,7 +72,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Today's Classes</p>
-                                <h3 class="fw-bold mb-0" id="statTodaySlots">0</h3>
+                                <h3 class="fw-bold mb-0" id="statTodaySlots"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +83,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Active Days</p>
-                                <h3 class="fw-bold mb-0" id="statActiveDays">0 / 7</h3>
+                                <h3 class="fw-bold mb-0" id="statActiveDays"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-check2-circle" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -98,15 +98,15 @@
                 </div>
                 <div class="d-flex flex-wrap gap-2" id="dayFilterTabs">
                     <button class="day-pill-filter active" onclick="setDayFilter('All')">
-                        <i class="bi bi-grid-fill"></i> All Days <span class="badge bg-white text-primary rounded-pill ms-1" id="badgeAll">0</span>
+                        <i class="bi bi-grid-fill"></i> All Days <span class="badge bg-white text-primary rounded-pill ms-1" id="badgeAll"><span class="count-spinner-dark count-spinner-sm"></span></span>
                     </button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Monday')">Mon <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeMon">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Tuesday')">Tue <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeTue">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Wednesday')">Wed <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeWed">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Thursday')">Thu <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeThu">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Friday')">Fri <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeFri">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Saturday')">Sat <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeSat">0</span></button>
-                    <button class="day-pill-filter" onclick="setDayFilter('Sunday')">Sun <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeSun">0</span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Monday')">Mon <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeMon"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Tuesday')">Tue <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeTue"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Wednesday')">Wed <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeWed"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Thursday')">Thu <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeThu"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Friday')">Fri <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeFri"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Saturday')">Sat <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeSat"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
+                    <button class="day-pill-filter" onclick="setDayFilter('Sunday')">Sun <span class="badge bg-light text-dark rounded-pill ms-1" id="badgeSun"><span class="count-spinner-dark count-spinner-sm"></span></span></button>
                 </div>
             </div>
 
@@ -152,8 +152,14 @@
                             <input type="time" class="form-control rounded-3" id="slotTime" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Subject / Lecture Title</label>
-                            <input type="text" class="form-control rounded-3" id="slotSubject" placeholder="e.g. Advanced Calculus, CS Lab, Physics Lecture" required>
+                            <label class="form-label fw-bold small text-muted">Course Subject</label>
+                            <select class="form-select rounded-3" id="slotSubjectSelect" onchange="onSlotSubjectSelectChange()">
+                                <option value="">-- Choose enrolled subject --</option>
+                                <option value="__other__">Other (Enter manually)...</option>
+                            </select>
+                            <div id="slotCustomSubjectWrap" class="mt-2 d-none">
+                                <input type="text" class="form-control rounded-3" id="slotCustomSubject" placeholder="Enter custom subject or class title (e.g. Physics Lab, Seminar)">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 pt-0">
@@ -171,6 +177,7 @@
     <script src="js/app.js"></script>
     <script>
         let timetable = [];
+        let userSubjects = [];
         let currentDayFilter = 'All';
         let addSlotModalInstance = null;
 
@@ -195,12 +202,24 @@
         }
 
         async function loadTimetable() {
+            setCountLoading('statWeeklySlots', false);
+            setCountLoading('statTodaySlots', false);
+            setCountLoading('statActiveDays', false);
+            ['badgeAll', 'badgeMon', 'badgeTue', 'badgeWed', 'badgeThu', 'badgeFri', 'badgeSat', 'badgeSun'].forEach(function(id) {
+                setCountLoading(id, true, true);
+            });
             document.getElementById('timetableSkeleton').classList.remove('d-none');
             document.getElementById('timetableGrid').classList.add('d-none');
             hideNetworkError('timetableGrid');
 
             try {
-                timetable = (await apiRequest('/api/timetable')) || [];
+                const [slots, subs] = await Promise.all([
+                    apiRequest('/api/timetable'),
+                    apiRequest('/api/subjects').catch(function() { return []; })
+                ]);
+                timetable = slots || [];
+                userSubjects = subs || [];
+                populateSlotSubjectSelect();
                 updateStats();
                 renderCards();
             } catch (err) {
@@ -208,6 +227,53 @@
                 showToast('Failed to load timetable.', 'danger');
             } finally {
                 document.getElementById('timetableSkeleton').classList.add('d-none');
+            }
+        }
+
+        function populateSlotSubjectSelect() {
+            const select = document.getElementById('slotSubjectSelect');
+            if (!select) return;
+            select.innerHTML = '';
+
+            if (userSubjects.length > 0) {
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.textContent = '-- Choose enrolled subject --';
+                select.appendChild(defaultOpt);
+
+                userSubjects.forEach(function(s) {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = s.name + (s.code ? ' (' + s.code + ')' : '');
+                    select.appendChild(opt);
+                });
+
+                const otherOpt = document.createElement('option');
+                otherOpt.value = '__other__';
+                otherOpt.textContent = 'Other (Enter manually)...';
+                select.appendChild(otherOpt);
+
+                select.value = userSubjects[0].name;
+                document.getElementById('slotCustomSubjectWrap').classList.add('d-none');
+            } else {
+                const otherOpt = document.createElement('option');
+                otherOpt.value = '__other__';
+                otherOpt.textContent = 'Other (Enter manually)...';
+                select.appendChild(otherOpt);
+                select.value = '__other__';
+                document.getElementById('slotCustomSubjectWrap').classList.remove('d-none');
+            }
+        }
+
+        function onSlotSubjectSelectChange() {
+            const select = document.getElementById('slotSubjectSelect');
+            const wrap = document.getElementById('slotCustomSubjectWrap');
+            const input = document.getElementById('slotCustomSubject');
+            if (select.value === '__other__' || !select.value) {
+                wrap.classList.remove('d-none');
+                input.focus();
+            } else {
+                wrap.classList.add('d-none');
             }
         }
 
@@ -279,11 +345,14 @@
                 return;
             }
 
-            filtered.forEach(slot => {
+            filtered.forEach(function(slot) {
                 const col = document.createElement('div');
                 col.className = 'col-md-6 col-lg-4';
 
-                const borderCol = dayColorMap[slot.day] || '#7c3aed';
+                const matchedSub = userSubjects.find(function(s) {
+                    return (s.name || '').toLowerCase() === (slot.subject || '').toLowerCase();
+                });
+                const borderCol = matchedSub && matchedSub.color ? matchedSub.color : (dayColorMap[slot.day] || '#7c3aed');
 
                 col.innerHTML = `
                     <div class="timetable-card-modern" style="border-left-color: ${borderCol};">
@@ -295,9 +364,12 @@
                                 <i class="bi bi-clock"></i> ${formatTime(slot.time)}
                             </span>
                         </div>
-                        <h5 class="fw-bold text-dark mb-3 lh-sm">${escapeHtml(slot.subject)}</h5>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <h5 class="fw-bold text-dark mb-0 lh-sm">${escapeHtml(slot.subject)}</h5>
+                            ${matchedSub && matchedSub.code ? `<span class="badge bg-light text-secondary border small">${escapeHtml(matchedSub.code)}</span>` : ''}
+                        </div>
                         <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                            <small class="text-muted"><i class="bi bi-mortarboard me-1"></i> Lecture Block</small>
+                            <small class="text-muted"><i class="bi bi-mortarboard me-1"></i>${matchedSub && matchedSub.instructor ? escapeHtml(matchedSub.instructor) : 'Class Session'}</small>
                             <button class="btn btn-sm btn-outline-danger rounded-3" onclick="deleteSlot('${slot._id}', this)" title="Delete Slot">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -325,9 +397,18 @@
             const btn = document.getElementById('submitSlotBtn');
             const day = document.getElementById('slotDay').value;
             const time = document.getElementById('slotTime').value;
-            const subject = document.getElementById('slotSubject').value.trim();
+            const select = document.getElementById('slotSubjectSelect');
+            let subject = select.value === '__other__'
+                ? document.getElementById('slotCustomSubject').value.trim()
+                : select.value;
+            if (!subject) {
+                subject = document.getElementById('slotCustomSubject').value.trim();
+            }
 
-            if (!day || !time || !subject) return;
+            if (!day || !time || !subject) {
+                showToast('Please select or enter a subject.', 'warning');
+                return;
+            }
 
             setBtnLoading(btn, true, 'Saving Slot...');
 
@@ -335,6 +416,7 @@
                 await apiRequest('/api/timetable', 'POST', { day, time, subject });
                 showToast('Class slot added to schedule!', 'success');
                 document.getElementById('addSlotForm').reset();
+                populateSlotSubjectSelect();
 
                 if (!addSlotModalInstance) {
                     addSlotModalInstance = bootstrap.Modal.getInstance(document.getElementById('addSlotModal'));

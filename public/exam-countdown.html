@@ -61,7 +61,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Urgent Exams (&lt; 14d)</p>
-                                <h3 class="fw-bold mb-0" id="statUrgentExams">0</h3>
+                                <h3 class="fw-bold mb-0" id="statUrgentExams"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-bell-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -72,7 +72,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Upcoming Total</p>
-                                <h3 class="fw-bold mb-0" id="statUpcomingTotal">0</h3>
+                                <h3 class="fw-bold mb-0" id="statUpcomingTotal"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-calendar-event" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +83,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Concluded Exams</p>
-                                <h3 class="fw-bold mb-0" id="statCompletedExams">0</h3>
+                                <h3 class="fw-bold mb-0" id="statCompletedExams"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-trophy-fill" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -95,13 +95,13 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <div class="d-flex flex-wrap gap-2" id="examFilterTabs">
                         <button class="day-pill-filter active" onclick="setExamFilter('all')">
-                            All Exams <span class="badge bg-white text-dark rounded-pill ms-1" id="filterCountAll">0</span>
+                            All Exams <span class="badge bg-white text-dark rounded-pill ms-1" id="filterCountAll"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                         <button class="day-pill-filter" onclick="setExamFilter('upcoming')">
-                            Upcoming <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountUpcoming">0</span>
+                            Upcoming <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountUpcoming"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                         <button class="day-pill-filter" onclick="setExamFilter('past')">
-                            Completed <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountPast">0</span>
+                            Completed <span class="badge bg-light text-dark rounded-pill ms-1" id="filterCountPast"><span class="count-spinner-dark count-spinner-sm"></span></span>
                         </button>
                     </div>
 
@@ -130,8 +130,18 @@
                 <form id="addExamForm" onsubmit="createExam(event)">
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Exam Name / Subject</label>
-                            <input type="text" class="form-control rounded-3" id="examNameInput" placeholder="e.g. Calculus Midterm II, Biochemistry Final" required>
+                            <label class="form-label fw-bold small text-muted">Course Subject</label>
+                            <select class="form-select rounded-3" id="examSubjectSelect" onchange="onExamSubjectSelectChange()">
+                                <option value="">General / Choose Enrolled Subject</option>
+                                <option value="__other__">Other (Enter manually)...</option>
+                            </select>
+                            <div id="examCustomSubjectWrap" class="mt-2 d-none">
+                                <input type="text" class="form-control rounded-3" id="examCustomSubject" placeholder="Enter custom subject name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Exam Name / Title</label>
+                            <input type="text" class="form-control rounded-3" id="examNameInput" placeholder="e.g. Midterm II, Final Examination" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Exam Date</label>
@@ -153,6 +163,7 @@
     <script src="js/app.js"></script>
     <script>
         let exams = [];
+        let userSubjects = [];
         let currentFilter = 'all';
         let tickerInterval = null;
 
@@ -174,12 +185,24 @@
         }
 
         async function loadExams() {
+            setCountLoading('statUrgentExams', false);
+            setCountLoading('statUpcomingTotal', false);
+            setCountLoading('statCompletedExams', false);
+            ['filterCountAll', 'filterCountUpcoming', 'filterCountPast'].forEach(function(id) {
+                setCountLoading(id, true, true);
+            });
             document.getElementById('examSkeleton').classList.remove('d-none');
             document.getElementById('examListContainer').classList.add('d-none');
             hideNetworkError('examListContainer');
 
             try {
-                exams = (await apiRequest('/api/exams')) || [];
+                const [examsRes, subsRes] = await Promise.all([
+                    apiRequest('/api/exams'),
+                    apiRequest('/api/subjects').catch(function() { return []; })
+                ]);
+                exams = examsRes || [];
+                userSubjects = subsRes || [];
+                populateExamSubjectSelect();
                 updateStats();
                 renderExamCards();
             } catch (err) {
@@ -187,6 +210,40 @@
                 showToast('Failed to load exams.', 'danger');
             } finally {
                 document.getElementById('examSkeleton').classList.add('d-none');
+            }
+        }
+
+        function populateExamSubjectSelect() {
+            const select = document.getElementById('examSubjectSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">General / Choose Enrolled Subject</option>';
+
+            userSubjects.forEach(function(s) {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name + (s.code ? ' (' + s.code + ')' : '');
+                select.appendChild(opt);
+            });
+
+            const otherOpt = document.createElement('option');
+            otherOpt.value = '__other__';
+            otherOpt.textContent = 'Other (Enter manually)...';
+            select.appendChild(otherOpt);
+        }
+
+        function onExamSubjectSelectChange() {
+            const select = document.getElementById('examSubjectSelect');
+            const wrap = document.getElementById('examCustomSubjectWrap');
+            const input = document.getElementById('examCustomSubject');
+            const nameInput = document.getElementById('examNameInput');
+            if (select.value === '__other__') {
+                wrap.classList.remove('d-none');
+                input.focus();
+            } else {
+                wrap.classList.add('d-none');
+                if (select.value && (!nameInput.value || nameInput.value.includes('Exam') || nameInput.value.includes('Final'))) {
+                    nameInput.value = select.value + ' Final Exam';
+                }
             }
         }
 
@@ -279,19 +336,31 @@
                     urgencyBadge = '<span class="badge bg-light text-secondary small px-2 py-1"><i class="bi bi-calendar-event me-1"></i>Scheduled</span>';
                 }
 
+                let subjectBadge = '';
+                let matchedSub = null;
+                if (exam.subject) {
+                    matchedSub = userSubjects.find(s => (s.name || '').toLowerCase() === (exam.subject || '').toLowerCase());
+                    const subColor = matchedSub && matchedSub.color ? matchedSub.color : '#7c3aed';
+                    subjectBadge = '<span class="badge rounded-pill me-2 small" style="background: ' + subColor + '18; color: ' + subColor + '; font-weight: 700;"><i class="bi bi-book me-1"></i>' + escapeHtml(exam.subject) + '</span>';
+                }
+
                 const card = document.createElement('div');
                 card.className = `exam-card-modern ${isUrgent ? 'exam-urgent' : ''}`;
+                if (!isUrgent && matchedSub && matchedSub.color) {
+                    card.style.borderLeftColor = matchedSub.color;
+                }
                 card.dataset.targetTime = targetTime;
 
                 card.innerHTML = `
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                         <div>
-                            <div class="d-flex align-items-center gap-2 mb-1">
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                                 ${urgencyBadge}
+                                ${subjectBadge}
                                 <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${exam.date}</small>
                             </div>
                             <h5 class="fw-bold text-dark mb-1">${escapeHtml(exam.name)}</h5>
-                            <small class="text-muted">Target Exam Milestone</small>
+                            <small class="text-muted">${matchedSub && matchedSub.code ? escapeHtml(matchedSub.code) + ' • ' : ''}Target Exam Milestone</small>
                         </div>
 
                         <div class="ticker-grid" id="ticker-${exam._id}">
@@ -364,15 +433,20 @@
             const btn = document.getElementById('submitExamBtn');
             const name = document.getElementById('examNameInput').value.trim();
             const date = document.getElementById('examDateInput').value;
+            const select = document.getElementById('examSubjectSelect');
+            let subject = select.value === '__other__'
+                ? document.getElementById('examCustomSubject').value.trim()
+                : select.value;
 
             if (!name || !date) return;
 
             setBtnLoading(btn, true, 'Scheduling Exam...');
 
             try {
-                await apiRequest('/api/exams', 'POST', { name, date });
+                await apiRequest('/api/exams', 'POST', { name, date, subject });
                 showToast('Exam scheduled successfully!', 'success');
                 document.getElementById('addExamForm').reset();
+                populateExamSubjectSelect();
                 setDefaultExamDate();
 
                 const modalEl = document.getElementById('addExamModal');

@@ -16,13 +16,14 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const { name, due } = req.body;
+        const { name, due, subject } = req.body;
         if (!name || !due) {
             return res.status(400).json({ error: "Task name and due date are required." });
         }
         const task = new Task({
             userId: req.userId,
             name: name.trim(),
+            subject: (subject || "").trim(),
             due,
             done: false
         });
@@ -35,9 +36,10 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
     try {
-        const { name, due, done } = req.body;
+        const { name, due, done, subject } = req.body;
         const updates = {};
         if (name !== undefined) updates.name = name.trim();
+        if (subject !== undefined) updates.subject = subject.trim();
         if (due !== undefined) updates.due = due;
         if (done !== undefined) updates.done = done;
 

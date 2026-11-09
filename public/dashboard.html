@@ -55,15 +55,7 @@
                 </div>
             </div>
 
-            <div id="dashboardPreloader" class="row g-3 mb-4">
-                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
-                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
-                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
-                <div class="col-md-3 col-6"><div class="gl-skeleton gl-skeleton-card"></div></div>
-                <div class="col-12"><div class="gl-skeleton" style="height: 240px; width: 100%; border-radius: 16px;"></div></div>
-            </div>
-
-            <div id="dashboardContent" class="d-none">
+            <div id="dashboardContent">
                 <div id="onboardingBannerContainer"></div>
 
                 <div class="row g-3 mb-4">
@@ -72,7 +64,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Total Tasks</p>
-                                <h3 class="fw-bold mb-0" id="totalTasks">0</h3>
+                                <h3 class="fw-bold mb-0" id="totalTasks"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-list-check" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -83,7 +75,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Completed</p>
-                                <h3 class="fw-bold mb-0" id="completedTasks">0</h3>
+                                <h3 class="fw-bold mb-0" id="completedTasks"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-check-circle" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -94,7 +86,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Study Hours</p>
-                                <h3 class="fw-bold mb-0" id="studyHours">0</h3>
+                                <h3 class="fw-bold mb-0" id="studyHours"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-clock-history" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -105,7 +97,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="mb-1" style="opacity: 0.8; font-size: 0.8rem;">Upcoming Exams</p>
-                                <h3 class="fw-bold mb-0" id="upcomingExams">0</h3>
+                                <h3 class="fw-bold mb-0" id="upcomingExams"><span class="count-spinner"></span></h3>
                             </div>
                             <i class="bi bi-calendar-event" style="font-size: 1.8rem; opacity: 0.4;"></i>
                         </div>
@@ -116,23 +108,28 @@
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="section-title">Urgent Tasks</div>
-                    <div class="row g-3 mb-4" id="urgentTasks"></div>
+                    <div class="row g-3 mb-4" id="urgentTasks">
+                        <div class="col-md-6"><div class="gl-skeleton" style="height: 110px; border-radius: 14px;"></div></div>
+                        <div class="col-md-6"><div class="gl-skeleton" style="height: 110px; border-radius: 14px;"></div></div>
+                    </div>
 
                     <div class="section-title">Your Productivity</div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="chart-card p-4">
                                 <h6 class="fw-bold mb-3">Tasks Progress</h6>
-                                <canvas id="doughnutChart"></canvas>
+                                <div id="doughnutSkeleton" class="gl-skeleton" style="height: 180px; border-radius: 14px; margin-bottom: 12px;"></div>
+                                <canvas id="doughnutChart" class="d-none"></canvas>
                                 <div class="text-center mt-2">
-                                    <span class="text-muted" id="progressText" style="font-size: 0.9rem;"></span>
+                                    <span class="text-muted" id="progressText" style="font-size: 0.9rem;"><span class="count-spinner-dark count-spinner-sm"></span> Loading tasks...</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="chart-card p-4">
                                 <h6 class="fw-bold mb-3">Weekly Activity</h6>
-                                <canvas id="barChart"></canvas>
+                                <div id="barSkeleton" class="gl-skeleton" style="height: 215px; border-radius: 14px;"></div>
+                                <canvas id="barChart" class="d-none"></canvas>
                             </div>
                         </div>
                     </div>
@@ -141,12 +138,18 @@
                 <div class="col-lg-4">
                     <div class="section-title">Today's Schedule</div>
                     <div class="chart-card p-3 mb-4">
-                        <div id="scheduleList"></div>
+                        <div id="scheduleList">
+                            <div class="gl-skeleton mb-2" style="height: 48px; border-radius: 10px;"></div>
+                            <div class="gl-skeleton" style="height: 48px; border-radius: 10px;"></div>
+                        </div>
                     </div>
 
                     <div class="section-title">Exam Countdown</div>
                     <div class="chart-card p-3">
-                        <div id="examCountdown"></div>
+                        <div id="examCountdown">
+                            <div class="gl-skeleton mb-2" style="height: 48px; border-radius: 10px;"></div>
+                            <div class="gl-skeleton" style="height: 48px; border-radius: 10px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,11 +161,26 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="js/app.js"></script>
     <script>
+        var doughnutChartInstance = null;
+        var barChartInstance = null;
+
         async function initDashboard() {
-            var preloader = document.getElementById("dashboardPreloader");
-            var content = document.getElementById("dashboardContent");
-            if (preloader) preloader.classList.remove("d-none");
-            if (content) content.classList.add("d-none");
+            setCountLoading("totalTasks", false);
+            setCountLoading("completedTasks", false);
+            setCountLoading("studyHours", false);
+            setCountLoading("upcomingExams", false);
+            document.getElementById("urgentTasks").innerHTML = '<div class="col-md-6"><div class="gl-skeleton" style="height: 110px; border-radius: 14px;"></div></div><div class="col-md-6"><div class="gl-skeleton" style="height: 110px; border-radius: 14px;"></div></div>';
+            document.getElementById("scheduleList").innerHTML = '<div class="gl-skeleton mb-2" style="height: 48px; border-radius: 10px;"></div><div class="gl-skeleton" style="height: 48px; border-radius: 10px;"></div>';
+            document.getElementById("examCountdown").innerHTML = '<div class="gl-skeleton mb-2" style="height: 48px; border-radius: 10px;"></div><div class="gl-skeleton" style="height: 48px; border-radius: 10px;"></div>';
+            var dSkel = document.getElementById("doughnutSkeleton");
+            if (dSkel) dSkel.classList.remove("d-none");
+            var dCanvas = document.getElementById("doughnutChart");
+            if (dCanvas) dCanvas.classList.add("d-none");
+            var bSkel = document.getElementById("barSkeleton");
+            if (bSkel) bSkel.classList.remove("d-none");
+            var bCanvas = document.getElementById("barChart");
+            if (bCanvas) bCanvas.classList.add("d-none");
+            document.getElementById("progressText").innerHTML = '<span class="count-spinner-dark count-spinner-sm"></span> Loading tasks...';
             hideNetworkError("dashboardContent");
 
             try {
@@ -257,20 +275,17 @@
                 var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
                 document.getElementById("progressText").textContent = completed + " of " + total + " tasks completed";
 
-                renderUrgentTasks(tasks);
+                renderUrgentTasks(tasks, subjects);
                 renderCharts(progress, completed, pending);
-                renderSchedule(timetable);
-                renderExams(exams);
-
-                if (preloader) preloader.classList.add("d-none");
-                if (content) content.classList.remove("d-none");
+                renderSchedule(timetable, subjects);
+                renderExams(exams, subjects);
             } catch (err) {
-                if (preloader) preloader.classList.add("d-none");
                 showNetworkError("dashboardContent", "initDashboard()", "Could not load dashboard data from database.");
             }
         }
 
-        function renderUrgentTasks(tasks) {
+        function renderUrgentTasks(tasks, subjects) {
+            subjects = subjects || [];
             var urgent = tasks.filter(function(t) { return !t.done; }).sort(function(a, b) {
                 return new Date(a.due) - new Date(b.due);
             }).slice(0, 4);
@@ -287,12 +302,18 @@
                     var diffDays = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
                     var dueText = isOverdue ? "Overdue" : diffDays + " day" + (diffDays !== 1 ? "s" : "") + " left";
 
+                    var sub = task.subject ? subjects.find(function(s) {
+                        return s.name.toLowerCase() === task.subject.toLowerCase();
+                    }) : null;
+                    var subBadge = task.subject ? '<span class="badge rounded-pill me-1" style="background-color: ' + (sub ? sub.color : '#7c3aed') + '; color: #fff; font-size: 0.72rem;"><i class="bi bi-book me-1"></i>' + escapeHtml(task.subject) + '</span>' : '';
+
                     var col = document.createElement("div");
                     col.className = "col-md-6";
                     col.innerHTML = '<div class="task-card p-3">' +
                         '<p class="text-muted mb-1" style="font-size: 0.78rem;"><i class="bi bi-folder2"></i> GradeLift / Study</p>' +
                         '<h6 class="fw-bold mb-2">' + escapeHtml(task.name) + '</h6>' +
                         '<div class="mb-2">' +
+                        subBadge +
                         '<span class="tag tag-study">Studying</span>' +
                         (isOverdue ? '<span class="tag tag-high pulse-badge">Overdue</span>' : '<span class="tag tag-exam">Upcoming</span>') +
                         '</div>' +
@@ -307,8 +328,21 @@
         }
 
         function renderCharts(progress, completed, pending) {
-            var doughnutCtx = document.getElementById("doughnutChart").getContext("2d");
-            new Chart(doughnutCtx, {
+            var dSkel = document.getElementById("doughnutSkeleton");
+            if (dSkel) dSkel.classList.add("d-none");
+            var dCanvas = document.getElementById("doughnutChart");
+            if (dCanvas) dCanvas.classList.remove("d-none");
+
+            var bSkel = document.getElementById("barSkeleton");
+            if (bSkel) bSkel.classList.add("d-none");
+            var bCanvas = document.getElementById("barChart");
+            if (bCanvas) bCanvas.classList.remove("d-none");
+
+            if (doughnutChartInstance) {
+                doughnutChartInstance.destroy();
+            }
+            var doughnutCtx = dCanvas.getContext("2d");
+            doughnutChartInstance = new Chart(doughnutCtx, {
                 type: "doughnut",
                 data: {
                     labels: ["Completed", "Pending"],
@@ -331,8 +365,11 @@
                 }
             });
 
-            var barCtx = document.getElementById("barChart").getContext("2d");
-            new Chart(barCtx, {
+            if (barChartInstance) {
+                barChartInstance.destroy();
+            }
+            var barCtx = bCanvas.getContext("2d");
+            barChartInstance = new Chart(barCtx, {
                 type: "bar",
                 data: {
                     labels: progress.tasksPerDay.labels,
@@ -369,7 +406,8 @@
             });
         }
 
-        function renderSchedule(timetable) {
+        function renderSchedule(timetable, subjects) {
+            subjects = subjects || [];
             var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             var todayName = days[new Date().getDay()];
             var todaySlots = timetable.filter(function(s) {
@@ -384,18 +422,29 @@
                 scheduleList.innerHTML = '<p class="text-muted text-center py-3 mb-0">No classes today 🎉</p>';
             } else {
                 todaySlots.forEach(function(slot) {
+                    var sub = slot.subject ? subjects.find(function(s) {
+                        return s.name.toLowerCase() === slot.subject.toLowerCase();
+                    }) : null;
+                    var color = sub ? sub.color : 'var(--primary)';
+                    var codeTag = (sub && sub.code) ? '<span class="text-muted ms-1" style="font-size: 0.75rem;">(' + escapeHtml(sub.code) + ')</span>' : '';
+
                     var item = document.createElement("div");
                     item.className = "schedule-item";
+                    item.style.borderLeft = "4px solid " + color;
                     item.innerHTML = '<div class="d-flex justify-content-between align-items-center">' +
-                        '<strong style="font-size: 0.9rem;">' + escapeHtml(slot.subject) + '</strong>' +
-                        '<small class="text-muted"><i class="bi bi-clock"></i> ' + slot.time + '</small>' +
+                        '<div>' +
+                        '<strong style="font-size: 0.9rem;">' + escapeHtml(slot.subject) + '</strong>' + codeTag +
+                        (slot.room ? '<br><small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-geo-alt"></i> ' + escapeHtml(slot.room) + '</small>' : '') +
+                        '</div>' +
+                        '<small class="text-muted"><i class="bi bi-clock"></i> ' + escapeHtml(slot.time) + '</small>' +
                         '</div>';
                     scheduleList.appendChild(item);
                 });
             }
         }
 
-        function renderExams(exams) {
+        function renderExams(exams, subjects) {
+            subjects = subjects || [];
             var upcomingExamsList = exams.filter(function(e) {
                 return new Date(e.date) > new Date();
             }).sort(function(a, b) {
@@ -410,12 +459,19 @@
                 upcomingExamsList.forEach(function(exam) {
                     var diff = new Date(exam.date) - new Date();
                     var daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    var sub = exam.subject ? subjects.find(function(s) {
+                        return s.name.toLowerCase() === exam.subject.toLowerCase();
+                    }) : null;
+                    var color = sub ? sub.color : '#7c3aed';
+
                     var item = document.createElement("div");
                     item.className = "d-flex justify-content-between align-items-center p-2 mb-2";
                     item.style.borderRadius = "8px";
                     item.style.background = "var(--bg-light)";
+                    item.style.borderLeft = "3px solid " + color;
                     item.innerHTML = '<div>' +
                         '<strong style="font-size: 0.88rem;">' + escapeHtml(exam.name) + '</strong>' +
+                        (exam.subject ? '<span class="badge rounded-pill ms-2" style="background-color: ' + color + '; color: #fff; font-size: 0.68rem;">' + escapeHtml(exam.subject) + '</span>' : '') +
                         '<br><small class="text-muted">' + exam.date + '</small>' +
                         '</div>' +
                         '<span class="badge rounded-pill exam-badge">' + daysLeft + ' days</span>';

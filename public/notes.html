@@ -49,6 +49,7 @@
                     <small class="text-muted">Capture lecture notes, formulas, and concepts ready for AI quiz generation</small>
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-warning-subtle text-dark border px-3 py-2 rounded-pill fw-bold d-flex align-items-center gap-1"><i class="bi bi-journal-text text-warning"></i> Notes: <span id="statNotesCount"><span class="count-spinner-dark count-spinner-sm"></span></span></span>
                     <button class="btn btn-warning text-dark fw-bold rounded-3" onclick="openNewNote()">
                         <i class="bi bi-plus-lg me-1"></i> New Study Note
                     </button>
@@ -82,6 +83,16 @@
                     <form id="noteForm" onsubmit="event.preventDefault(); document.getElementById('saveNoteBtn').click();">
                         <input type="hidden" id="noteEditId" value="">
                         <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Course Subject</label>
+                            <select class="form-select rounded-3" id="noteSubjectSelect" onchange="onNoteSubjectSelectChange()">
+                                <option value="">General / Choose Subject</option>
+                                <option value="__other__">Other (Enter manually)...</option>
+                            </select>
+                            <div id="noteCustomSubjectWrap" class="mt-2 d-none">
+                                <input type="text" class="form-control rounded-3" id="noteCustomSubject" placeholder="Enter custom subject name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label for="noteTitle" class="form-label fw-bold small text-muted">Title / Topic</label>
                             <input type="text" class="form-control rounded-3" id="noteTitle" placeholder="e.g. Thermodynamics Laws & Applications" required>
                         </div>
@@ -105,6 +116,7 @@
     <script src="js/app.js"></script>
     <script>
         let notes = [];
+        let userSubjects = [];
         let noteModal = null;
 
         function getNoteModal() {
@@ -120,12 +132,19 @@
         }
 
         async function loadNotes() {
+            setCountLoading('statNotesCount', true, true);
             document.getElementById('notesSkeleton').classList.remove('d-none');
             document.getElementById('notesList').classList.add('d-none');
             hideNetworkError('notesList');
 
             try {
-                notes = (await apiRequest('/api/notes')) || [];
+                const [notesRes, subsRes] = await Promise.all([
+                    apiRequest('/api/notes'),
+                    apiRequest('/api/subjects').catch(function() { return []; })
+                ]);
+                notes = notesRes || [];
+                userSubjects = subsRes || [];
+                populateNoteSubjectSelect();
                 renderNotes();
             } catch (err) {
                 showNetworkError('notesList', 'loadNotes()', 'Could not load your study notes from database.');
@@ -135,7 +154,39 @@
             }
         }
 
+        function populateNoteSubjectSelect() {
+            const select = document.getElementById('noteSubjectSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">General / Choose Subject</option>';
+
+            userSubjects.forEach(function(s) {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name + (s.code ? ' (' + s.code + ')' : '');
+                select.appendChild(opt);
+            });
+
+            const otherOpt = document.createElement('option');
+            otherOpt.value = '__other__';
+            otherOpt.textContent = 'Other (Enter manually)...';
+            select.appendChild(otherOpt);
+        }
+
+        function onNoteSubjectSelectChange() {
+            const select = document.getElementById('noteSubjectSelect');
+            const wrap = document.getElementById('noteCustomSubjectWrap');
+            const input = document.getElementById('noteCustomSubject');
+            if (select.value === '__other__') {
+                wrap.classList.remove('d-none');
+                input.focus();
+            } else {
+                wrap.classList.add('d-none');
+            }
+        }
+
         function renderNotes() {
+            const countEl = document.getElementById('statNotesCount');
+            if (countEl) countEl.textContent = notes.length;
             const container = document.getElementById('notesList');
             container.innerHTML = '';
 
@@ -164,6 +215,19 @@
 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body p-4 d-flex flex-column';
+
+                let subjectBadge = null;
+                if (note.subject) {
+                    const matchedSub = userSubjects.find(s => (s.name || '').toLowerCase() === (note.subject || '').toLowerCase());
+                    const subColor = matchedSub && matchedSub.color ? matchedSub.color : '#f59e0b';
+                    subjectBadge = document.createElement('span');
+                    subjectBadge.className = 'badge rounded-pill mb-2 small align-self-start';
+                    subjectBadge.style.background = subColor + '18';
+                    subjectBadge.style.color = subColor;
+                    subjectBadge.style.fontWeight = '700';
+                    subjectBadge.innerHTML = '<i class="bi bi-book me-1"></i>' + escapeHtml(note.subject);
+                    cardBody.appendChild(subjectBadge);
+                }
 
                 const titleEl = document.createElement('h5');
                 titleEl.className = 'card-title fw-bold text-dark mb-1 lh-sm';
@@ -225,6 +289,10 @@
             document.getElementById('noteContent').value = '';
             document.getElementById('noteEditId').value = '';
             document.getElementById('noteModalTitle').textContent = 'New Note';
+            const select = document.getElementById('noteSubjectSelect');
+            if (select) select.value = '';
+            document.getElementById('noteCustomSubjectWrap').classList.add('d-none');
+            document.getElementById('noteCustomSubject').value = '';
             getNoteModal().show();
         }
 
@@ -234,6 +302,28 @@
             document.getElementById('noteContent').value = note.content;
             document.getElementById('noteEditId').value = note._id;
             document.getElementById('noteModalTitle').textContent = 'Edit Note';
+
+            const select = document.getElementById('noteSubjectSelect');
+            const wrap = document.getElementById('noteCustomSubjectWrap');
+            const customInput = document.getElementById('noteCustomSubject');
+
+            if (note.subject) {
+                const found = userSubjects.find(s => (s.name || '').toLowerCase() === note.subject.toLowerCase());
+                if (found) {
+                    select.value = found.name;
+                    wrap.classList.add('d-none');
+                    customInput.value = '';
+                } else {
+                    select.value = '__other__';
+                    wrap.classList.remove('d-none');
+                    customInput.value = note.subject;
+                }
+            } else {
+                select.value = '';
+                wrap.classList.add('d-none');
+                customInput.value = '';
+            }
+
             getNoteModal().show();
         }
 
@@ -246,16 +336,20 @@
             }
             const editId = document.getElementById('noteEditId').value;
             const today = new Date().toISOString().split('T')[0];
-            const btn = document.getElementById('saveNoteBtn');
+            const select = document.getElementById('noteSubjectSelect');
+            let subject = select.value === '__other__'
+                ? document.getElementById('noteCustomSubject').value.trim()
+                : select.value;
 
+            const btn = document.getElementById('saveNoteBtn');
             setBtnLoading(btn, true, 'Saving Note...');
 
             try {
                 if (editId === '') {
-                    await apiRequest('/api/notes', 'POST', { title, content, date: today });
+                    await apiRequest('/api/notes', 'POST', { title, content, date: today, subject });
                     showToast('Note created successfully!', 'success');
                 } else {
-                    await apiRequest(`/api/notes/${editId}`, 'PUT', { title, content, date: today });
+                    await apiRequest(`/api/notes/${editId}`, 'PUT', { title, content, date: today, subject });
                     showToast('Note updated.', 'success');
                 }
                 getNoteModal().hide();

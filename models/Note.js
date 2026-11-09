@@ -12,6 +12,11 @@ const noteSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    subject: {
+        type: String,
+        trim: true,
+        default: ""
+    },
     content: {
         type: String,
         default: ""
